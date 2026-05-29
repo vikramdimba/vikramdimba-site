@@ -123,8 +123,24 @@
   .cred h3{font-size:1.08rem;font-weight:600;letter-spacing:-.01em;margin-bottom:6px}
   .cred p{font-size:.94rem;color:var(--ink-soft)}
 
+  /* FORM */
+  .form-card{background:var(--card);border-radius:16px;padding:34px 32px;max-width:600px;margin:34px auto 0;text-align:left;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+  .form-card .fld{margin-bottom:18px}
+  .form-card label{display:block;font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:7px}
+  .form-card input,.form-card select,.form-card textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-family:inherit;font-size:.98rem;color:var(--ink);background:#fff}
+  .form-card textarea{min-height:88px;resize:vertical}
+  .form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,107,.13)}
+  .form-card .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .form-card button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px;transition:background .2s}
+  .form-card button:hover{background:var(--accent-deep)}
+  .form-card button:disabled{opacity:.6;cursor:default}
+  #formResult{display:none;margin-top:22px;color:var(--paper);font-size:1.1rem;line-height:1.5}
+  #formResult strong{color:#fff}
+
   @media(max-width:760px){
     .creds{grid-template-columns:1fr}
+    .form-card .row{grid-template-columns:1fr}
+    .form-card{padding:26px 22px}
     .stats{grid-template-columns:1fr}
     .steps{grid-template-columns:1fr}
     .fit-grid{grid-template-columns:1fr;gap:30px}
@@ -276,7 +292,61 @@
     <div class="sec-label" style="color:#7fd4cf">Where we'd start</div>
     <p class="q">"What workflow in your business feels more manual than it should — and what happens if the one person who knows how it works is out for a week?"</p>
     <p class="muted">If that question brings a real process to mind, that's where we start. The first step is just a 30-minute operations review — free, no pitch.</p>
-    <a href="mailto:vikramdimba@gmail.com?subject=Free%20operations%20review" class="btn btn-light">Book a free operations review</a>
+
+    <form id="opsForm" class="form-card">
+      <input type="hidden" name="access_key" value="80121a08-7aea-4df5-b7d2-9cd1332615fd">
+      <input type="hidden" name="subject" value="New operations review request — vikramdimba.com">
+      <input type="hidden" name="from_name" value="vikramdimba.com">
+      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+      <div class="fld">
+        <label for="f_workflow">What's one workflow in your business that feels more manual than it should?</label>
+        <textarea id="f_workflow" name="Manual workflow" required placeholder="The thing that eats time, lives in someone's head, or you dread doing…"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="fld">
+          <label for="f_type">What kind of business?</label>
+          <select id="f_type" name="Business type" required>
+            <option value="" disabled selected>Choose one</option>
+            <option>DTC / online brand</option>
+            <option>Retail (single or multi-location)</option>
+            <option>Distribution / wholesale</option>
+            <option>Services</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="fld">
+          <label for="f_team">How many people on your team?</label>
+          <select id="f_team" name="Team size" required>
+            <option value="" disabled selected>Choose one</option>
+            <option>Just me</option>
+            <option>2–10</option>
+            <option>11–50</option>
+            <option>50+</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label for="f_name">Your name</label>
+        <input id="f_name" type="text" name="Name" required placeholder="First and last">
+      </div>
+
+      <div class="row">
+        <div class="fld">
+          <label for="f_email">Email</label>
+          <input id="f_email" type="email" name="Email" required placeholder="you@business.com">
+        </div>
+        <div class="fld">
+          <label for="f_biz">Business name / website</label>
+          <input id="f_biz" type="text" name="Business / website" required placeholder="yourbusiness.com">
+        </div>
+      </div>
+
+      <button type="submit" id="opsSubmit">Request my free operations review</button>
+    </form>
+    <div id="formResult"></div>
   </div>
 </section>
 
@@ -289,6 +359,45 @@
     </div>
   </div>
 </footer>
+
+<script>
+  (function(){
+    var form = document.getElementById('opsForm');
+    var result = document.getElementById('formResult');
+    var btn = document.getElementById('opsSubmit');
+    if(!form) return;
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      var json = JSON.stringify(Object.fromEntries(new FormData(form)));
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: json
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data.success){
+          form.style.display = 'none';
+          result.style.display = 'block';
+          result.innerHTML = "<strong>Got it — thank you.</strong> I'll review what you sent and be in touch shortly to set up your free operations review.";
+        } else {
+          result.style.display = 'block';
+          result.textContent = (data.message || 'Something went wrong.') + ' You can also email vikramdimba@gmail.com directly.';
+          btn.disabled = false;
+          btn.textContent = 'Request my free operations review';
+        }
+      })
+      .catch(function(){
+        result.style.display = 'block';
+        result.textContent = 'Something went wrong sending the form. Please email vikramdimba@gmail.com directly.';
+        btn.disabled = false;
+        btn.textContent = 'Request my free operations review';
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
