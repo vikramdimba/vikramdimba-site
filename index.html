@@ -248,8 +248,8 @@
           <li>One or two of those people are the glue, and it would genuinely hurt if they were out for a week.</li>
         </ul>
       </div>
-      <div>
-        <p class="lead">If three of those five are true, we should talk.</p>
+      <div style="align-self:center">
+        <p class="serif" style="font-size:clamp(1.45rem,2.6vw,1.95rem);font-style:italic;line-height:1.3;color:var(--accent-deep);max-width:18ch">If three of those five are true, we should talk.</p>
       </div>
     </div>
   </div>
@@ -286,60 +286,7 @@
     <p class="q">Where does your website stop knowing what your store knows?</p>
     <p class="muted">That gap is usually where the manual work lives. The first step is just a 30-minute review, free, no pitch.</p>
 
-    <form id="opsForm" class="form-card">
-      <input type="hidden" name="access_key" value="80121a08-7aea-4df5-b7d2-9cd1332615fd">
-      <input type="hidden" name="subject" value="New operations review request, vikramdimba.com">
-      <input type="hidden" name="from_name" value="vikramdimba.com">
-      <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
-
-      <div class="fld">
-        <label for="f_workflow">What's one workflow in your business that feels more manual than it should?</label>
-        <textarea id="f_workflow" name="Manual workflow" required placeholder="The thing that eats time, lives in someone's head, or you dread doing…"></textarea>
-      </div>
-
-      <div class="row">
-        <div class="fld">
-          <label for="f_type">What kind of business?</label>
-          <select id="f_type" name="Business type" required>
-            <option value="" disabled selected>Choose one</option>
-            <option>DTC / online brand</option>
-            <option>Retail (single or multi-location)</option>
-            <option>Distribution / wholesale</option>
-            <option>Services</option>
-            <option>Other</option>
-          </select>
-        </div>
-        <div class="fld">
-          <label for="f_team">How many people on your team?</label>
-          <select id="f_team" name="Team size" required>
-            <option value="" disabled selected>Choose one</option>
-            <option>Just me</option>
-            <option>2-10</option>
-            <option>11-50</option>
-            <option>50+</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="fld">
-        <label for="f_name">Your name</label>
-        <input id="f_name" type="text" name="Name" required placeholder="First and last">
-      </div>
-
-      <div class="row">
-        <div class="fld">
-          <label for="f_email">Email</label>
-          <input id="f_email" type="email" name="Email" required placeholder="you@business.com">
-        </div>
-        <div class="fld">
-          <label for="f_biz">Business name / website</label>
-          <input id="f_biz" type="text" name="Business / website" required placeholder="yourbusiness.com">
-        </div>
-      </div>
-
-      <button type="submit" id="opsSubmit">Request my free operations review</button>
-    </form>
-    <div id="formResult"></div>
+    <iframe id="opsDiagnostic" src="/operations-review-diagnostic.html" title="Operations Review, live diagnostic" scrolling="no" loading="lazy" style="width:100%;max-width:680px;height:760px;display:block;margin:34px auto 0;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#16181d;box-shadow:0 18px 50px rgba(0,0,0,.22)"></iframe>
   </div>
 </section>
 
@@ -354,40 +301,17 @@
 </footer>
 
 <script>
+  // Auto-size the embedded diagnostic and keep each step in view.
   (function(){
-    var form = document.getElementById('opsForm');
-    var result = document.getElementById('formResult');
-    var btn = document.getElementById('opsSubmit');
-    if(!form) return;
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      var json = JSON.stringify(Object.fromEntries(new FormData(form)));
-      fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: json
-      })
-      .then(function(r){ return r.json(); })
-      .then(function(data){
-        if(data.success){
-          form.style.display = 'none';
-          result.style.display = 'block';
-          result.innerHTML = "<strong>Got it, thank you.</strong> I'll review what you sent and be in touch shortly to set up your free operations review.";
-        } else {
-          result.style.display = 'block';
-          result.textContent = (data.message || 'Something went wrong.') + ' You can also email vikramdimba@gmail.com directly.';
-          btn.disabled = false;
-          btn.textContent = 'Request my free operations review';
-        }
-      })
-      .catch(function(){
-        result.style.display = 'block';
-        result.textContent = 'Something went wrong sending the form. Please email vikramdimba@gmail.com directly.';
-        btn.disabled = false;
-        btn.textContent = 'Request my free operations review';
-      });
+    var f = document.getElementById('opsDiagnostic');
+    if(!f) return;
+    window.addEventListener('message', function(e){
+      var d = e.data || {};
+      if(d.type === 'ops-diagnostic-height' && typeof d.height === 'number'){
+        f.style.height = (d.height + 2) + 'px';
+      } else if(d.type === 'ops-diagnostic-step'){
+        f.scrollIntoView({behavior:'smooth', block:'start'});
+      }
     });
   })();
 </script>

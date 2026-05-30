@@ -1,0 +1,387 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations Review · live diagnostic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Re-themed to the vikramdimba.com palette (charcoal + teal + paper).
+       --amber is kept as the token name but now carries the site's teal accent. */
+    --bg:#16181d; --raise:#1f2229; --raise-2:#262a33;
+    --ink:#f4f1ea; --ink-dim:#a7adba; --ink-faint:#727a86;
+    --line:#2c313b; --line-soft:#23272f;
+    --amber:#5ec5bd; --rust:#e07d5e; --sage:#9aa676;
+    --serif:"Newsreader",Georgia,serif; --mono:"Inter",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--ink)}
+  body{
+    font-family:var(--serif);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, rgba(94,197,189,.07), transparent 60%),
+      radial-gradient(60% 50% at 90% 110%, rgba(31,111,107,.07), transparent 60%);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:660px;margin:0 auto;padding:clamp(28px,6vw,72px) clamp(20px,5vw,32px) 80px}
+
+  .topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+  .brand{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-dim)}
+  .brand b{color:var(--amber);font-weight:500}
+  .step-count{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--ink-faint)}
+
+  .progress{display:flex;gap:6px;margin-bottom:42px}
+  .seg{height:2px;flex:1;background:var(--line);border-radius:2px;overflow:hidden}
+  .seg i{display:block;height:100%;width:0;background:var(--amber);transition:width .5s cubic-bezier(.2,.7,.2,1)}
+  .seg.done i{width:100%}
+  .seg.active i{width:100%;background:linear-gradient(90deg,var(--amber),rgba(94,197,189,.35))}
+
+  .panel{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  .panel.on{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);margin-bottom:14px}
+  h1{font-weight:500;font-size:clamp(25px,5.2vw,35px);line-height:1.13;letter-spacing:-.01em;margin-bottom:10px}
+  .sub{color:var(--ink-dim);font-size:16px;max-width:46ch;margin-bottom:30px}
+
+  .chips{display:flex;flex-direction:column;gap:10px}
+  .chip{
+    font-family:var(--mono);font-size:13px;background:var(--raise);color:var(--ink);
+    border:1px solid var(--line);border-radius:2px;padding:14px 16px;cursor:pointer;text-align:left;
+    transition:border-color .2s,background .2s,transform .12s;line-height:1.4;width:100%;
+  }
+  .chip:hover{border-color:var(--amber);background:var(--raise-2)}
+  .chip:active{transform:translateY(1px)}
+  .chip .h{display:block;color:var(--ink)}
+  .chip .d{display:block;color:var(--ink-faint);font-size:11px;margin-top:3px}
+
+  .back{margin-top:24px;background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);padding:4px 0}
+  .back:hover{color:var(--ink-dim)}
+
+  .scan{font-family:var(--mono);font-size:13px;color:var(--ink-dim);line-height:2.1;margin-top:24px}
+  .scan div{opacity:0;transform:translateX(-6px)}
+  .scan div.in{animation:lineIn .4s ease both}
+  .scan .tick{color:var(--sage)}
+  @keyframes lineIn{to{opacity:1;transform:none}}
+
+  .rb-tag{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px}
+  .recog{font-size:15px;color:var(--ink-dim);font-style:italic;margin-bottom:16px;max-width:50ch;opacity:0;transform:translateY(8px)}
+  .recog.in{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  .rb-title{font-size:clamp(23px,4.8vw,31px);font-weight:500;line-height:1.15;letter-spacing:-.01em;margin-bottom:28px;opacity:0;transform:translateY(8px)}
+  .rb-title.in{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  .rb-title em{font-style:italic;color:var(--amber)}
+
+  .block{border-left:2px solid var(--line);padding:2px 0 2px 18px;margin-bottom:24px;opacity:0;transform:translateY(8px)}
+  .block.in{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+  .block .lab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+  .block p{font-size:16px;color:var(--ink);line-height:1.55}
+  .block.risk{border-left-color:var(--rust)} .block.risk .lab{color:var(--rust)}
+  .block.warn{border-left-color:var(--amber)} .block.warn .lab{color:var(--amber)}
+  .block.keep{border-left-color:var(--sage)} .block.keep .lab{color:var(--sage)}
+
+  .pattern{background:var(--raise);border:1px solid var(--line);border-left-width:2px;border-radius:3px;padding:20px 22px;margin:4px 0 24px;opacity:0;transform:translateY(8px)}
+  .pattern.in{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+  .pattern .lab{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px}
+  .pattern .name{font-family:var(--serif);font-weight:600;font-size:clamp(22px,5vw,28px);letter-spacing:-.01em;line-height:1.1}
+  .pattern .gloss{color:var(--ink-dim);font-size:14px;margin-top:8px;line-height:1.5}
+  .pattern.t-risk{border-left-color:var(--rust)} .pattern.t-risk .name{color:var(--rust)}
+  .pattern.t-warn{border-left-color:var(--amber)} .pattern.t-warn .name{color:var(--amber)}
+  .pattern.t-good{border-left-color:var(--sage)} .pattern.t-good .name{color:var(--sage)}
+
+  .cta{border-top:1px solid var(--line-soft);margin-top:32px;padding-top:30px;opacity:0;transform:translateY(8px)}
+  .cta.in{animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+  .cta p{color:var(--ink-dim);font-size:15px;margin-bottom:18px;max-width:50ch}
+  .cta p b{color:var(--ink);font-weight:500}
+  .go{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.04em;background:var(--amber);color:#1a160c;border:none;border-radius:2px;padding:14px 22px;cursor:pointer;font-weight:600;transition:transform .12s,background .2s}
+  .go:hover{background:#74d2cb} .go:active{transform:translateY(1px)}
+  .restart{display:block;margin-top:22px;background:none;border:none;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint)}
+  .restart:hover{color:var(--ink-dim)}
+
+  .lead{display:none;margin-top:20px}
+  .lead.on{display:block;animation:rise .4s ease both}
+  .lead .row{margin-bottom:12px}
+  .lead label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px}
+  .lead input{width:100%;font-family:var(--serif);font-size:15px;background:var(--raise);color:var(--ink);border:1px solid var(--line);border-radius:2px;padding:12px 14px}
+  .lead input:focus{outline:none;border-color:var(--amber)}
+  .lead .err{color:var(--rust);font-family:var(--mono);font-size:11px;margin-top:10px;display:none}
+  .lead .err.on{display:block}
+  .lead .send{margin-top:4px}
+  .confirm{display:none;margin-top:6px}
+  .confirm.on{display:block;animation:rise .45s ease both}
+  .confirm p{color:var(--ink);font-size:16px;line-height:1.55}
+  .confirm .pat{font-family:var(--mono);font-size:12px;color:var(--ink-dim);margin-top:14px;border-top:1px solid var(--line-soft);padding-top:14px}
+</style>
+
+<div class="wrap">
+  <div class="topline">
+    <div class="brand">Vikram Dimba · <b>Operations Review</b></div>
+    <div class="step-count" id="stepCount">01 / 03</div>
+  </div>
+  <div class="progress" id="prog">
+    <div class="seg"><i></i></div><div class="seg"><i></i></div><div class="seg"><i></i></div>
+  </div>
+
+  <div class="stage">
+    <section class="panel on" data-step="1">
+      <div class="kicker">First, the shape of the business</div>
+      <h1>Where does your business actually live?</h1>
+      <p class="sub">There's no wrong answer. It just changes where the seams tend to hide.</p>
+      <div class="chips" id="q1"></div>
+    </section>
+
+    <section class="panel" data-step="2">
+      <div class="kicker">Now the painful part</div>
+      <h1>Which of these is held together by hand right now?</h1>
+      <p class="sub">Pick the one that, if it broke tomorrow, you'd feel by lunch.</p>
+      <div class="chips" id="q2"></div>
+      <button class="back" data-back>← back</button>
+    </section>
+
+    <section class="panel" data-step="3">
+      <div class="kicker">Last one</div>
+      <h1>If it had to run without its main person next week, what happens?</h1>
+      <p class="sub">You already know the answer to this one. That's the point.</p>
+      <div class="chips" id="q3"></div>
+      <button class="back" data-back>← back</button>
+    </section>
+
+    <section class="panel" data-step="4" id="analyze">
+      <div class="kicker">Reading your situation</div>
+      <h1>Tracing where it leaks.</h1>
+      <div class="scan" id="scan"></div>
+    </section>
+
+    <section class="panel" data-step="5" id="readback">
+      <div class="rb-tag">Preliminary read</div>
+      <div class="recog" id="rbRecog"></div>
+      <div class="rb-title" id="rbTitle"></div>
+      <div id="rbBody"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const CHANNEL = [
+  {id:"both", h:"A Shopify store and a physical store or warehouse",
+   recog:"So you're running two storefronts that have to agree with each other in real time. That's the hardest version of this, and the one almost nothing on the market is actually built for."},
+  {id:"online", h:"Mostly online, Shopify-first",
+   recog:"You're online-first, but the moment stock moves through a back room or a warehouse you've got a seam most pure-online tools quietly ignore."},
+  {id:"floor", h:"Mostly in-person, Shopify is the smaller side",
+   recog:"Your floor is the real business and Shopify is the newer, smaller side. That's exactly where the two systems drift, because the online piece gets bolted on rather than built in."},
+  {id:"every", h:"Honestly, a bit of everything",
+   recog:"A bit of everything usually means the seams are everywhere and no single tool sees the whole picture. It's the most common shape, and the most quietly expensive."}
+];
+
+const FLOWS = [
+  {id:"po",  h:"Vendor & purchase orders", d:"orders that arrive as texts, PDFs, and email threads", noun:"purchasing",
+   title:"Your purchasing runs on <em>memory and inboxes</em>, not a system.",
+   pattern:"Orders come in as texts, PDFs, and email threads, and someone re-keys them by hand into wherever they actually need to live. Every order is a small act of translation, and translation is where errors and delays get born.",
+   breaks:"It breaks quietly. A reorder gets missed because it was buried in a thread. A quantity gets fat-fingered. Nobody notices until the stock isn't there or the invoice doesn't match, and by then you're firefighting a problem that started three weeks earlier."},
+  {id:"inv", h:"Inventory & stock counts", d:"the truth lives in a spreadsheet someone updates by hand", noun:"your inventory count",
+   title:"Your inventory is a <em>number everyone agrees to trust.</em>",
+   pattern:"The real count lives in a spreadsheet or one system that a person keeps current, mostly. Everything downstream (purchasing, what the website shows, what you tell a customer is in stock) rests on a number that's right until someone forgets to update it.",
+   breaks:"You feel it as a slow erosion of trust in your own data. People start double-checking the count against reality, the exact manual work it was supposed to remove. And the gap between what the site says and what's on the shelf becomes someone's daily cleanup job."},
+  {id:"rep", h:"Reporting & the weekly numbers", d:"a report stitched together from a few places", noun:"your reporting",
+   title:"Your weekly numbers are <em>rebuilt by hand</em>, every single week.",
+   pattern:"The report you actually run on gets assembled from a few places, online and floor, copied into one sheet, and cleaned up by a human before anyone trusts it. The insight is real. The process to get it is a tax you pay every cycle, forever.",
+   breaks:"Because it's manual, it's fragile and it's late. You're always steering by a slightly old picture. And the moment the person assembling it gets busy, the report is the first thing that slips, exactly when you might need it most."},
+  {id:"ful", h:"Fulfillment & who's-doing-what", d:"tracked across chats and people's memory", noun:"coordination",
+   title:"Coordination lives in <em>chat threads and someone's head.</em>",
+   pattern:"Who's handling what, what's done, what's stuck: it's tracked across messages, verbal handoffs, and the working memory of one or two people who just know. It works because those people are good, not because the system is.",
+   breaks:"Things fall through the cracks between people. A handoff gets dropped, a step gets skipped, and nobody can point to where it went wrong because there's no record, only recollection. You spend real time reconstructing what happened instead of moving forward."},
+  {id:"cust",h:"Customer & order history", d:"context that lives in one person's head", noun:"your customer knowledge",
+   title:"Your customer knowledge is <em>trapped in one person.</em>",
+   pattern:"The context that makes a customer feel known (their history, their preferences, the note about why they were unhappy last time) lives in memory or scattered notes, split between the register and the site. It's a real asset. It's just not a transferable one.",
+   breaks:"The experience goes inconsistent the moment that person isn't the one handling it. A loyal customer gets treated like a stranger, because the knowledge never left one head and never crossed from the floor to the website."},
+  {id:"mix", h:"Honestly, it's a mix", d:"a little of all of the above", noun:"this layer",
+   title:"The work holding it together lives in <em>people, not systems.</em>",
+   pattern:"It isn't one broken workflow. It's the pattern underneath all of them: work that depends on someone remembering to do it, a version of the truth that's only as current as the last manual update, and knowledge that lives in heads instead of systems.",
+   breaks:"It breaks at the seams. The handoffs between one person and the next, between the website and the floor, between the tool that has the data and the person who needs it. Those gaps are invisible until something falls through one, and then it's a fire drill to find out where."}
+];
+
+const FRAGILITY = [
+  {id:"f1", h:"One person just knows it, nothing's written down", tone:"risk",
+   label:"Single point of failure", gloss:"One person is the system. That's the risk to close first.",
+   read:"You told me one person just knows how {noun} works, and none of it is written down. So that person isn't doing the work, they are the system. The week they're out, {noun} doesn't slow down gracefully, it goes dark. Things that should have happened don't, and you find out which ones two or three weeks later when the gaps surface, long after the trail's gone cold. That is the most common and most expensive risk in an owner-operated business, and it stays invisible right up until the day it isn't."},
+  {id:"f2", h:"One main person, a rusty backup, no real process", tone:"risk",
+   label:"Single point of failure", gloss:"The backup feels like safety. It isn't a system.",
+   read:"You've got one main person on {noun} and a backup who's rusty, with no real process written down. The backup feels like safety, but rusty and undocumented isn't a system, it's a hope. The week your main person is out, the backup is reconstructing from half-memory, and the things that slip are the ones only the main person knew to watch for. It's still effectively a single point of failure, just with a thin cushion."},
+  {id:"f3", h:"A few people touch it, but no documented way", tone:"warn",
+   label:"Tribal knowledge", gloss:"It works, but it drifts, and it doesn't transfer cleanly.",
+   read:"A few people touch {noun}, but there's no documented way it's done, so each of them runs a slightly different version. That feels resilient because the work never fully stops. What it actually creates is drift: the same task done three ways, no single source of truth, and no clean way to train the next hire except shadowing. More robust than one-person-knows, but tribal knowledge gets less true every time someone leaves."},
+  {id:"f4", h:"It's documented, anyone trained could run it", tone:"good",
+   label:"Resilient, watch the seams", gloss:"This one's solid. The leak is probably next door.",
+   read:"Honest read: {noun} is in better shape than most businesses your size. It's documented and someone trained could pick it up, which means this probably isn't where your time and risk are leaking. So if things still feel manual, the problem likely isn't this workflow, it's the connective tissue between it and the next one, the handoff where a well-run process meets one that isn't. That's usually the real seam worth looking at, and it's a much better problem to have."},
+  {id:"f5", h:"Not sure", tone:"warn",
+   label:"Worth a closer look", gloss:"The uncertainty is itself the signal.",
+   read:"You said you're not sure who could run {noun} without its main person, and that itself is the tell. Most owners who aren't sure find, when they actually look, that it's more concentrated in one head than they'd assumed, because the person holding it together makes it look effortless from the outside. That's worth knowing before you find out the hard way, and it's exactly the kind of thing a 30-minute look answers fast."}
+];
+
+const CLOSE = "None of this is broken because anyone did anything wrong. It's the natural debt of a business that runs in two worlds the tools were never built to connect, where a person quietly becomes the bridge between them. That seam is exactly the layer I rebuild, and it's a far more solvable problem than it feels like from the inside.";
+
+// === LEAD DESTINATION ===
+// Web3Forms endpoint. The access key below is client-safe by design (it only
+// allows submitting to this one form), so it is fine to ship in the page.
+// To use a different service (Formspree, Basin), change FORM_ENDPOINT and the
+// access_key in the payload below. Do NOT paste a Slack webhook or secret key here.
+const FORM_ENDPOINT = "https://api.web3forms.com/submit";
+const WEB3FORMS_ACCESS_KEY = "80121a08-7aea-4df5-b7d2-9cd1332615fd";
+
+const state={channel:null,flow:null,frag:null};
+let cur=1;
+const panels=[...document.querySelectorAll('.panel')];
+const segs=[...document.querySelectorAll('#prog .seg')];
+const stepCount=document.getElementById('stepCount');
+
+function show(step){
+  cur=step;
+  panels.forEach(p=>p.classList.toggle('on', +p.dataset.step===step));
+  segs.forEach((s,i)=>{
+    s.classList.remove('done','active');
+    if(step>=4) s.classList.add('done');
+    else if(i<step-1) s.classList.add('done');
+    else if(i===step-1) s.classList.add('active');
+  });
+  stepCount.textContent = step<=3 ? ('0'+step+' / 03') : 'Result';
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(window.parent!==window) parent.postMessage({type:"ops-diagnostic-step"},"*");
+}
+
+function buildChips(wrapId, list, withDesc, onPick){
+  const w=document.getElementById(wrapId);
+  list.forEach(item=>{
+    const el=document.createElement('button');
+    el.className='chip';
+    el.innerHTML = withDesc && item.d
+      ? `<span class="h">${item.h}</span><span class="d">${item.d}</span>`
+      : `<span class="h">${item.h}</span>`;
+    el.onclick=()=>onPick(item);
+    w.appendChild(el);
+  });
+}
+buildChips('q1', CHANNEL, false, it=>{state.channel=it.id; show(2);});
+buildChips('q2', FLOWS,   true,  it=>{state.flow=it.id;    show(3);});
+buildChips('q3', FRAGILITY,false,it=>{state.frag=it.id;    runAnalyze();});
+
+document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show(cur-1));
+
+function runAnalyze(){
+  show(4);
+  const ch=CHANNEL.find(x=>x.id===state.channel);
+  const f=FLOWS.find(x=>x.id===state.flow);
+  const lines=[
+    `> reading: ${ch.h.toLowerCase()}`,
+    `> isolating workflow: ${f.h.toLowerCase()}`,
+    `> testing for single points of failure`,
+    `> mapping the seam between online and floor`,
+    `✓ read complete`
+  ];
+  const scan=document.getElementById('scan');
+  scan.innerHTML='';
+  lines.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.textContent=t;
+    if(t.startsWith('✓')) d.className='tick';
+    scan.appendChild(d);
+    setTimeout(()=>d.classList.add('in'), 220*i+120);
+  });
+  setTimeout(renderReadback, 220*lines.length+650);
+}
+
+function html(str){const t=document.createElement('template');t.innerHTML=str.trim();return t.content.firstElementChild;}
+
+function renderReadback(){
+  const ch=CHANNEL.find(x=>x.id===state.channel);
+  const f=FLOWS.find(x=>x.id===state.flow);
+  const fr=FRAGILITY.find(x=>x.id===state.frag);
+  const riskRead=fr.read.replace(/\{noun\}/g, f.noun);
+  const pressLab = fr.tone==='good' ? "The resilience read" : "What happens under pressure";
+  const pressClass = fr.tone==='risk' ? 'risk' : fr.tone==='warn' ? 'warn' : 'keep';
+
+  document.getElementById('rbRecog').textContent=ch.recog;
+  document.getElementById('rbTitle').innerHTML=f.title;
+
+  const body=document.getElementById('rbBody');
+  body.innerHTML='';
+  const parts=[
+    html(`<div class="block"><div class="lab">What's really happening</div><p>${f.pattern}</p></div>`),
+    html(`<div class="block risk"><div class="lab">Where it breaks</div><p>${f.breaks}</p></div>`),
+    html(`<div class="pattern t-${fr.tone}"><div class="lab">Pattern detected</div><div class="name">${fr.label}</div><div class="gloss">${fr.gloss}</div></div>`),
+    html(`<div class="block ${pressClass}"><div class="lab">${pressLab}</div><p>${riskRead}</p></div>`),
+    html(`<div class="block keep"><div class="lab">The bottom line</div><p>${CLOSE}</p></div>`),
+    html(`<div class="cta">
+        <p>This is a surface read from three answers. <b>The real review is 30 minutes, free, where we take this exact workflow apart together</b> and I show you precisely where the time, money, and risk leak across your website and your floor. No deck, no pitch.</p>
+        <button class="go" id="goBtn">Book the free operations review →</button>
+        <div class="lead" id="lead">
+          <div class="row"><label>Your name</label><input id="ld_name" type="text" autocomplete="name"></div>
+          <div class="row"><label>Email</label><input id="ld_email" type="email" autocomplete="email"></div>
+          <div class="row"><label>Business name or website</label><input id="ld_biz" type="text"></div>
+          <button class="go send" id="sendBtn">Send my details →</button>
+          <div class="err" id="ld_err">Add your name and a valid email so I can reach you.</div>
+        </div>
+        <div class="confirm" id="confirm"></div>
+        <button class="restart" id="restartBtn">Run it again with different answers</button>
+      </div>`)
+  ];
+
+  // animate the title + recog too
+  const rbRecog=document.getElementById('rbRecog');
+  const rbTitle=document.getElementById('rbTitle');
+  rbRecog.classList.remove('in'); rbTitle.classList.remove('in');
+
+  parts.forEach(el=>body.appendChild(el));
+  show(5);
+
+  const seq=[rbRecog,rbTitle,...parts];
+  seq.forEach((el,i)=>setTimeout(()=>el.classList.add('in'),130*i+60));
+
+  document.getElementById('restartBtn').onclick=()=>{state.channel=state.flow=state.frag=null;show(1);};
+
+  const goBtn=document.getElementById('goBtn');
+  const lead=document.getElementById('lead');
+  goBtn.onclick=()=>{ goBtn.style.display='none'; lead.classList.add('on'); document.getElementById('ld_name').focus(); };
+
+  document.getElementById('sendBtn').onclick=async ()=>{
+    const name=document.getElementById('ld_name').value.trim();
+    const email=document.getElementById('ld_email').value.trim();
+    const biz=document.getElementById('ld_biz').value.trim();
+    const err=document.getElementById('ld_err');
+    const validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if(!name || !validEmail){ err.classList.add('on'); return; }
+    err.classList.remove('on');
+
+    // the gold: the lead arrives already diagnosed
+    const payload={
+      access_key: WEB3FORMS_ACCESS_KEY,
+      subject: "New operations review lead (pre-diagnosed), vikramdimba.com",
+      from_name: "vikramdimba.com diagnostic",
+      name, email, business:biz,
+      channel:ch.h, workflow:f.h, pattern:fr.label, source:"operations-review-diagnostic" };
+
+    if(FORM_ENDPOINT){
+      try{
+        await fetch(FORM_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(payload)});
+      }catch(e){ /* fail gracefully, still confirm so the person isn't stranded */ }
+    }
+
+    const confirm=document.getElementById('confirm');
+    lead.classList.remove('on'); lead.style.display='none';
+    confirm.innerHTML=`<p>Got it, ${name.split(' ')[0]}. I'll be in touch within a day to set up your review.</p>
+      <div class="pat">Logged with your request: ${ch.h} · ${f.h} · ${fr.label}</div>`;
+    confirm.classList.add('on');
+  };
+}
+
+// --- embedded mode: report content height to the parent page so the iframe can auto-size ---
+// Measures .wrap (not body, which carries min-height:100vh) so the height shrinks correctly too.
+if(window.parent!==window){
+  const wrap=document.querySelector('.wrap');
+  const postHeight=()=>parent.postMessage({type:"ops-diagnostic-height",height:Math.ceil(wrap.getBoundingClientRect().height)},"*");
+  if(window.ResizeObserver) new ResizeObserver(postHeight).observe(wrap);
+  window.addEventListener('load',postHeight);
+  postHeight();
+}
+
+show(1);
+</script>
