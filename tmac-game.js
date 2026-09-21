@@ -10,7 +10,7 @@
   const stage = root.querySelector('.moment-stage');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const plays = [
-    { x: 110, y: 310, value: 3, speed: 1, green: [.70, .84], title: '01 / THE FIRST THREE', prompt: 'Watch the meter above T-Mac. Hold Space or the button; let go in green.', call: 'THERE’S STILL TIME.' },
+    { x: 110, y: 310, value: 3, speed: 1, green: [.70, .84], title: '01 / THE FIRST THREE', prompt: 'Watch the shot meter. Hold Space or the button; let go in green.', call: 'THERE’S STILL TIME.' },
     { x: -105, y: 309, value: 3, speed: .82, green: [.65, .78], title: '02 / GET DUNCAN IN THE AIR', prompt: 'First, press and let go to fake. Then press again and hold to shoot.', call: 'AND. ONE.' },
     { x: 0, y: 190, value: 1, speed: 1.15, green: [.67, .85], title: '02 / FINISH THE AND-ONE', prompt: 'Clock stopped. Take a breath. Make the free throw.', call: 'ONE POSSESSION.' },
     { x: 177, y: 244, value: 3, speed: .76, green: [.71, .82], title: '03 / BEAT BOWEN’S CLOSEOUT', prompt: 'Quick release. You have two seconds before Bowen smothers the shot.', call: 'DON’T GO ANYWHERE.' },
@@ -136,6 +136,12 @@
   }
   function updateCue() {
     const cue = $('cue');
+    // Move the same meter into the control deck on narrow courts. Reserving
+    // its row in CSS keeps both T-Mac and the Shoot button still as cues change.
+    const docked = state.width < 600;
+    root.classList.toggle('has-docked-cue', docked);
+    const parent = docked ? root.querySelector('.moment-controls') : stage;
+    if (cue.parentElement !== parent) parent.appendChild(cue);
     const actionable = ['ready', 'pump', 'pullup'].includes(state.phase);
     const waiting = state.phase === 'steal' || (state.step === 4 && state.phase === 'transition');
     cue.hidden = state.mode !== 'playing' || (!actionable && !waiting);
@@ -150,6 +156,7 @@
     cue.classList.toggle('is-waiting', waiting);
     const v = meterValue(), green = plays[state.step].green;
     cue.classList.toggle('is-green', charging && !fake && v >= green[0] && v <= green[1]);
+    if (docked) return;
     const narrow = state.width / state.height < 1.25;
     const scale = (narrow ? state.height / 620 : Math.min(state.width / 1100, state.height / 620)) * state.cameraZoom;
     const loc = point(state.player.x, state.player.y);
@@ -287,7 +294,7 @@
       announce('Duncan leaves his feet. Now press again and hold to shoot.');
       return;
     }
-    if (held < .12) { announce('Hold, don’t tap. Let go when the white line above T-Mac reaches green.'); updateCue(); return; }
+    if (held < .12) { announce('Hold, don’t tap. Let go when the white line in the shot meter reaches green.'); updateCue(); return; }
     feedback(blocked ? 'DUNCAN BLOCKS IT' : made ? 'PERFECT RELEASE' : value < low ? 'EARLY RELEASE' : 'LATE RELEASE', made);
     state.attempts++; if (made) state.perfect++;
     state.phase = 'shot'; state.phaseTime = 0; setAction(false); sound('release');

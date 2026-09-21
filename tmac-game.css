@@ -189,3 +189,12 @@
  .moment-tv .moment-controls{padding:12px 10px;margin-top:9px}.moment-tv-bottom{height:38px;padding:0 4px;gap:15px}.moment-tv-channel{font-size:8px}.moment-tv-channel small{display:none}.moment-tv-speaker{max-width:115px;height:13px}.moment-tv-dials{gap:8px}.moment-tv-dials i{width:19px;height:19px}.moment-tv-dials i:after{left:7px;top:2px;height:6px}
  .moment.is-focused{padding:8px 6px}.moment.is-focused .moment-tv{padding:0 6px;border-radius:16px}.moment.is-focused .moment-tv-top{min-height:30px}.moment.is-focused .moment-tv-bottom{height:25px}.moment.is-focused .moment-tv .moment-controls{padding:9px;gap:7px}
 }
+
+/* Phones: keep the only timing meter beside the input, clear of every face. */
+.has-docked-cue .moment-controls{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(94px,auto) auto;gap:10px}
+.has-docked-cue .moment-controls>.moment-cue{position:static;grid-column:1;grid-row:1;transform:none;width:100%;max-width:none;padding:0;gap:6px;border:0;border-radius:0;background:none;box-shadow:none;align-self:center}
+.has-docked-cue .moment-cue:after{display:none}
+.has-docked-cue .moment-cue.is-green strong{color:var(--lime)}
+.has-docked-cue .moment-controls>.moment-possession{grid-column:1;grid-row:1;min-height:0}
+.has-docked-cue .moment-controls:has(.moment-cue:not([hidden]))>.moment-possession{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.has-docked-cue .moment-controls>.moment-shoot{grid-column:1;grid-row:2;justify-content:center;min-height:48px}

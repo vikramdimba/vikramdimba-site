@@ -24,6 +24,7 @@ function game({ reducedMotion = true, width = 1100, height = 620, film = null } 
       focus: () => { const old = doc.activeElement; doc.activeElement = el; if (old && old !== el) listeners.get('tmac-game:focusout')?.({ target: old, relatedTarget: el }); },
       contains: other => other && other.id !== 'outside',
       setPointerCapture: noop,
+      appendChild: child => { child.parentElement = el; },
       querySelector: selector => element(selector),
       querySelectorAll: () => [0, 1, 3, 4].map(n => { const li = element(`li-${n}`); li.dataset.step = String(n); return li; })
     };
@@ -62,7 +63,7 @@ function game({ reducedMotion = true, width = 1100, height = 620, film = null } 
   function steal() {
     waitFor(() => api.state.phase === 'pullup');
   }
-  return { state: api.state, el: element, emit, advance, hold, settle, key, doc, shootGreen, reachSteal, steal, waitFor, start: () => emit('moment-start', 'click') };
+  return { state: api.state, el: element, emit, advance, hold, settle, key, doc, shootGreen, reachSteal, steal, waitFor, resize: (w, h) => { width = w; height = h; emit('window', 'resize'); }, start: () => emit('moment-start', 'click') };
 }
 
 test('four threes, one free throw, and a steal produce Houston 81–80', () => {
@@ -273,17 +274,31 @@ test('a quick tap then immediate hold shoots smoothly through the pump animation
 });
 
 
-test('shot instructions and the only DOM meter live together above the player', () => {
+test('mobile uses one live meter in the control deck, outside the court', () => {
   const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
   assert.equal((html.match(/id="moment-meter"/g) || []).length, 1);
   assert.ok(html.indexOf('id="moment-meter"') < html.indexOf('class="moment-controls"'));
   const g = game({ width: 368, height: 594 }); g.start();
   assert.equal(g.el('moment-cue').hidden, false);
   assert.equal(g.el('moment-meter-label').textContent, 'HOLD TO SHOOT');
-  const x = parseFloat(g.el('moment-cue').style.left);
-  assert.ok(x >= 120 && x <= 248);
+  assert.equal(g.el('moment-cue').parentElement, g.el('.moment-controls'));
   g.key('keydown'); g.advance(.4);
   assert.equal(g.el('moment-meter-label').textContent, 'LET GO IN GREEN');
   assert.equal(g.el('moment-meter').attrs['aria-valuenow'], '40');
   g.key('keyup'); assert.equal(g.el('moment-cue').hidden, true);
+});
+
+test('resizing moves the existing meter between the court and control deck without losing charge', () => {
+  const g = game(); g.start();
+  const cue = g.el('moment-cue');
+  assert.equal(cue.parentElement, g.el('.moment-stage'));
+  g.key('keydown'); g.advance(.4);
+  g.resize(368, 500);
+  assert.equal(cue.parentElement, g.el('.moment-controls'));
+  assert.equal(g.el('moment-meter').attrs['aria-valuenow'], '40');
+  g.resize(1100, 620);
+  assert.equal(cue.parentElement, g.el('.moment-stage'));
+  assert.equal(cue.hidden, false);
+  g.advance(.37); g.key('keyup');
+  assert.equal(g.state.shot.made, true);
 });
