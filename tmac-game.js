@@ -10,11 +10,11 @@
   const stage = root.querySelector('.moment-stage');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const plays = [
-    { x: 110, y: 310, value: 3, title: '01 / THE FIRST THREE', prompt: 'Find your rhythm. Hold, then release in the green.', call: 'THERE’S STILL TIME.' },
-    { x: -105, y: 309, value: 3, title: '02 / THE FOUR-POINT PLAY', prompt: 'Duncan closes out. Hold to draw him up, then release.', call: 'AND. ONE.' },
-    { x: 0, y: 190, value: 1, title: '02 / FINISH THE AND-ONE', prompt: 'Clock stopped. Take a breath. Make the free throw.', call: 'ONE POSSESSION.' },
-    { x: 177, y: 244, value: 3, title: '03 / OVER BOWEN', prompt: 'A hand in your face. Same shot. Same green window.', call: 'DON’T GO ANYWHERE.' },
-    { x: -142, y: 307, value: 3, title: '04 / THE GAME WINNER', prompt: 'The ball. The game. The whole building. It’s yours.', call: 'DO YOU BELIEVE?!' }
+    { x: 110, y: 310, value: 3, speed: 1, green: [.70, .84], title: '01 / THE FIRST THREE', prompt: 'Watch the meter above T-Mac. Hold Space or the button; let go in green.', call: 'THERE’S STILL TIME.' },
+    { x: -105, y: 309, value: 3, speed: .82, green: [.65, .78], title: '02 / GET DUNCAN IN THE AIR', prompt: 'First, press and let go to fake. Then press again and hold to shoot.', call: 'AND. ONE.' },
+    { x: 0, y: 190, value: 1, speed: 1.15, green: [.67, .85], title: '02 / FINISH THE AND-ONE', prompt: 'Clock stopped. Take a breath. Make the free throw.', call: 'ONE POSSESSION.' },
+    { x: 177, y: 244, value: 3, speed: .76, green: [.71, .82], title: '03 / BEAT BOWEN’S CLOSEOUT', prompt: 'Quick release. You have two seconds before Bowen smothers the shot.', call: 'DON’T GO ANYWHERE.' },
+    { x: -142, y: 307, value: 3, speed: .86, green: [.73, .84], title: '04 / PULL UP FOR THE WIN', prompt: 'Your ball. Same shot control: hold Space or the button, then let go in green.', call: 'DO YOU BELIEVE?!' }
   ];
   const state = {
     mode: 'intro', phase: 'ready', step: 0, home: 68, away: 76, remaining: 33,
@@ -23,7 +23,8 @@
     made: new Set(), attempts: 0, perfect: 0, call: '', callUntil: 0, cheer: 0,
     sound: false, audio: null, previous: 0, inView: true, lastBounce: 0,
     cameraX: 550, cameraZoom: 1, width: 1100, height: 620, feedbackUntil: 0,
-    lastShot: null, celebrationTime: 0, replayTime: 0, best: null, lastTick: 33
+    lastShot: null, celebrationTime: 0, replayTime: 0, best: null, lastTick: 33,
+    fakeReady: false, fakeUntil: 0, stealCue: false, inputHeld: false, runStarted: false, filmShown: false
   };
   const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -31,6 +32,11 @@
   const point = (x, y, z = 0) => ({ x: 550 + x * 1.17 * (1 + y / 800), y: 215 + y * .78 - z * (1 + y / 1600) });
   const rim = point(0, 52, 94);
   const jersey = { home: '#faf5e5', away: '#222629', red: '#c82a40', silver: '#c4c8c9' };
+  const rocketsMark = typeof Image === 'undefined' ? null : new Image();
+  if (rocketsMark) {
+    rocketsMark.onload = () => render(state.elapsed);
+    rocketsMark.src = 'assets/rockets-2003.svg';
+  }
 
   function announce(text) { $('status').textContent = text; }
   function callout(text, duration = 1.5) {
@@ -64,7 +70,7 @@
       for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / data.length);
       const noise = a.createBufferSource(), filter = a.createBiquadFilter(), gain = a.createGain();
       noise.buffer = buffer; filter.type = 'bandpass'; filter.frequency.value = 850; filter.Q.value = .5;
-      gain.gain.value = kind === 'win' ? .16 : .07;
+      gain.gain.value = kind === 'win' ? .22 : .05 + (state.home - 68) / 13 * .13;
       noise.connect(filter); filter.connect(gain); gain.connect(a.destination); noise.start();
     }
     if (kind === 'buzzer') tone(160, 145, .7, .09, 'sawtooth');
@@ -92,7 +98,7 @@
   function updateHUD() {
     setText('home', state.home); setText('away', state.away);
     setText('time', Math.max(0, state.remaining).toFixed(1));
-    setText('period', ['won', 'celebrating', 'replay'].includes(state.mode) ? 'FINAL' : state.step === 2 && state.mode === 'playing' ? 'FT · STOP' : '4TH');
+    setText('period', ['won', 'celebrating', 'replay', 'film'].includes(state.mode) ? 'FINAL' : state.step === 2 && state.mode === 'playing' ? 'FT · STOP' : '4TH');
     root.querySelector('.moment-clock').classList.toggle('urgent', state.remaining <= 8 && state.mode === 'playing');
     setText('progress', `${state.home - 68} / 13 PTS`);
     root.classList.toggle('is-clutch', state.step === 4 && state.mode === 'playing');
@@ -104,21 +110,50 @@
   }
   function meterValue() {
     if (state.charge === null) return 0;
-    const v = (state.elapsed - state.charge) / (state.phase === 'steal' ? 1.05 : .95);
-    return 1 - Math.abs((v % 2) - 1);
+    return clamp((state.elapsed - state.charge) / plays[state.step].speed);
   }
   function cancelCharge() {
     state.charge = null; $('shoot').classList.remove('charging');
     $('needle').style.left = '0%'; $('meter').setAttribute('aria-valuenow', '0');
   }
-  function setAction(enabled, steal = false) {
+  function updateCue() {
+    const cue = $('cue');
+    const actionable = ['ready', 'pump', 'pullup'].includes(state.phase);
+    const waiting = state.phase === 'steal' || (state.step === 4 && state.phase === 'transition');
+    cue.hidden = state.mode !== 'playing' || (!actionable && !waiting);
+    if (cue.hidden) return;
+    const fake = state.step === 1 && !state.fakeReady;
+    const charging = state.charge !== null;
+    const step = waiting ? state.phase === 'steal' ? 'THE STEAL · AUTOMATIC' : 'BALL SECURED' : state.step === 1 ? fake ? '1 OF 2 · PUMP FAKE' : '2 OF 2 · SHOOT' : state.step === 4 ? 'ONE THREE TO WIN' : state.step === 2 ? 'FREE THROW' : state.step === 3 ? 'BEAT BOWEN' : 'THE FIRST THREE';
+    const label = waiting ? 'WAIT — NO INPUT' : fake ? charging ? 'LET GO TO FAKE' : 'TAP & RELEASE' : charging ? 'LET GO IN GREEN' : 'HOLD TO SHOOT';
+    const hint = waiting ? state.inputHeld ? 'Keep holding. The shot meter is next.' : 'T-Mac has this. Get ready to shoot.' : fake ? charging ? 'Then press again and hold to shoot.' : 'Press and let go of Space or the button.' : charging ? 'Release when the white line reaches green.' : state.step === 1 ? 'Duncan is up. Hold Space or the button.' : 'Hold Space or the button below.';
+    setText('cue-step', step); setText('meter-label', label); setText('cue-hint', hint);
+    $('meter').hidden = waiting || fake;
+    cue.classList.toggle('is-waiting', waiting);
+    const v = meterValue(), green = plays[state.step].green;
+    cue.classList.toggle('is-green', charging && !fake && v >= green[0] && v <= green[1]);
+    const narrow = state.width / state.height < 1.25;
+    const scale = (narrow ? state.height / 620 : Math.min(state.width / 1100, state.height / 620)) * state.cameraZoom;
+    const loc = point(state.player.x, state.player.y);
+    const halfWidth = Math.min(110, (state.width - 24) / 2);
+    const x = state.width / 2 + (loc.x - state.cameraX) * scale;
+    const y = state.height / 2 + (loc.y - 310 - 112 * (1 + state.player.y / 850)) * scale;
+    cue.style.left = `${clamp(x, halfWidth + 10, state.width - halfWidth - 10)}px`;
+    cue.style.top = `${clamp(y, state.width < 600 ? 230 : 195, state.height - 30)}px`;
+  }
+  function setAction(enabled) {
     // Disabled controls lose focus in browsers. Keep keyboard play on the court.
     if (!enabled && document.activeElement === $('shoot')) stage.focus({ preventScroll: true });
     $('shoot').disabled = !enabled;
-    $('shoot').innerHTML = `${steal ? 'HOLD TO STEAL' : 'HOLD TO SHOOT'} <span>SPACE</span>`;
-    $('meter-label').textContent = steal ? 'RELEASE IN GREEN TO STEAL' : 'RELEASE IN THE GREEN';
+    const label = !enabled ? state.phase === 'steal' ? 'STEALING…' : 'WAIT…' : state.step === 1 && !state.fakeReady ? '1 · TAP TO FAKE' : state.step === 1 ? '2 · HOLD TO SHOOT' : 'HOLD TO SHOOT';
+    $('shoot').innerHTML = `${label} <span>SPACE</span>`;
+    const green = plays[state.step].green;
+    root.querySelector('.moment-green').style.left = `${green[0] * 100}%`;
+    root.querySelector('.moment-green').style.width = `${(green[1] - green[0]) * 100}%`;
+    updateCue();
   }
   function startGame() {
+    window.TmacFilm?.close(false);
     root.classList.add('is-focused');
     root.classList.remove('is-replay');
     if (state.mode === 'paused') { resume(); return; }
@@ -126,9 +161,11 @@
       remaining: 33, elapsed: 0, charge: null, shot: null, phaseTime: 0,
       made: new Set(), attempts: 0, perfect: 0, cheer: 0, callUntil: 0,
       player: { x: plays[0].x, y: plays[0].y }, previous: performance.now(), lastBounce: 0,
-      lastShot: null, celebrationTime: 0, replayTime: 0, lastTick: 33 });
+      lastShot: null, celebrationTime: 0, replayTime: 0, lastTick: 33,
+      fakeReady: false, fakeUntil: 0, stealCue: false, inputHeld: false, runStarted: false, filmShown: false });
     $('overlay').hidden = true; $('callout').classList.remove('visible');
     $('replay').hidden = true; $('feedback').classList.remove('visible');
+    $('original').hidden = true;
     $('broadcast').innerHTML = '4TH QUARTER <span>HOUSTON</span>';
     $('pause').disabled = false; $('pause').textContent = 'Ⅱ'; $('pause').setAttribute('aria-label', 'Pause game');
     setAction(true); $('play-label').textContent = plays[0].title; announce(plays[0].prompt);
@@ -142,11 +179,12 @@
     $('start-hint').textContent = state.mode === 'paused' ? 'The clock is stopped.' : 'Same moment. One more chance.';
     $('overlay').hidden = false;
     $('replay').hidden = state.mode !== 'won';
+    $('original').hidden = state.mode !== 'won';
     $('start').focus({ preventScroll: true });
   }
   function pause() {
     if (state.mode !== 'playing') return;
-    state.mode = 'paused'; cancelCharge(); setAction(false);
+    state.mode = 'paused'; state.inputHeld = false; cancelCharge(); setAction(false);
     $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
     $('pause').textContent = '▶'; $('pause').setAttribute('aria-label', 'Resume game');
     showOverlay('TAKE A BREATH.', 'Time out.', 'Your comeback will be right here.', 'BACK TO THE MOMENT ↗');
@@ -155,7 +193,7 @@
     if (document.hidden) return;
     state.mode = 'playing'; state.previous = performance.now(); $('overlay').hidden = true;
     $('pause').textContent = 'Ⅱ'; $('pause').setAttribute('aria-label', 'Pause game');
-    setAction(state.phase === 'ready' || state.phase === 'steal', state.phase === 'steal');
+    setAction(['ready', 'pump', 'pullup'].includes(state.phase));
     stage.focus({ preventScroll: true });
     resize();
   }
@@ -168,12 +206,12 @@
       state.cheer = 4;
       if (state.best === null || Number(used) < state.best) state.best = Number(used);
       announce(`Houston 81, San Antonio 80. You scored 13 points in ${used} seconds.`);
-      showOverlay('HOUSTON 81. SAN ANTONIO 80.', 'They believe now.', `13 points in ${used} seconds of game time. ${state.attempts} shots. One impossible comeback. This is why the username is TMACFORMVP.`, 'RUN IT BACK ↗');
+      showOverlay('HOUSTON 81. SAN ANTONIO 80.', 'They believe now.', `13 points. ${state.attempts} shots. And that’s why the username is TMACFORMVP.`, 'RUN IT BACK ↗');
       $('start-hint').textContent = `Your best this visit: 13 in ${state.best.toFixed(1)} seconds.`;
       $('broadcast').innerHTML = 'FINAL <span>HOUSTON WINS</span>';
     } else {
       sound('buzzer'); announce(`Time expired. ${state.home - 68} of 13 points scored.`);
-      showOverlay('THE CLOCK DOESN’T NEGOTIATE.', 'Almost a miracle.', `${state.home - 68} of 13 points. Hold until the needle reaches green, then let go. Houston needs every shot.`, 'ONE MORE CHANCE ↗');
+      showOverlay('THE CLOCK DOESN’T NEGOTIATE.', 'Almost a miracle.', `${state.home - 68} of 13 points. ${state.step === 1 ? 'Tap to get Duncan off his feet, then hold and release in green.' : state.phase === 'steal' ? 'T-Mac takes care of the steal. Hold to shoot once you have the ball.' : state.step >= 3 ? 'The last two threes need a quicker release. Read the green and beat the closeout.' : 'Hold until the needle reaches green, then let go.'}`, 'ONE MORE CHANCE ↗');
     }
     updateHUD();
   }
@@ -184,10 +222,19 @@
     callout('DO YOU BELIEVE?!', 3); sound('win'); updateHUD();
     if (reduced.matches) end(true);
   }
+  function originalFilm() {
+    if (!['won', 'celebrating'].includes(state.mode)) return;
+    if (!window.TmacFilm) { end(true); return; }
+    state.mode = 'film'; state.filmShown = true;
+    $('overlay').hidden = true; $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
+    $('broadcast').innerHTML = 'DECEMBER 9, 2004 <span>THE REAL MOMENT</span>';
+    window.TmacFilm.show({ sound: state.sound, onClose: () => end(true) });
+  }
   function replay() {
     if (state.mode !== 'won' || !state.lastShot) return;
     state.mode = 'replay'; state.phase = 'shot'; state.replayTime = 0; state.phaseTime = 0;
     state.shot = { ...state.lastShot, duration: 2.65 };
+    state.player = { ...state.lastShot.player };
     state.cheer = 0; state.previous = performance.now();
     root.classList.add('is-focused'); root.classList.add('is-replay');
     $('overlay').hidden = true; $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
@@ -196,34 +243,39 @@
     stage.focus({ preventScroll: true }); resize();
   }
   function beginCharge() {
-    if (state.mode !== 'playing' || !['ready', 'steal'].includes(state.phase) || state.charge !== null) return;
-    state.charge = state.elapsed; $('shoot').classList.add('charging');
+    if (state.mode !== 'playing') return;
+    state.inputHeld = true;
+    if (!['ready', 'pump', 'pullup'].includes(state.phase) || state.charge !== null) { updateCue(); return; }
+    if (state.phase === 'pullup' && !state.runStarted) { state.runStarted = true; state.phaseTime = 0; }
+    state.charge = state.elapsed; $('shoot').classList.add('charging'); updateCue();
+  }
+  function collectSteal() {
+    sound('steal'); callout('STOLEN BY McGRADY!');
+    announce('T-Mac has it. Wait for the shot meter, then hold to shoot.');
+    state.stealCue = false;
+    transition(1.25, () => ready(4), { x: 12, y: 385 });
   }
   function release() {
-    if (state.charge === null || state.mode !== 'playing') return;
+    state.inputHeld = false;
+    if (state.charge === null || state.mode !== 'playing') { updateCue(); return; }
     const value = meterValue(), held = state.elapsed - state.charge;
-    const made = held >= .12 && value >= .66 && value <= .84;
+    const [low, high] = plays[state.step].green;
+    const blocked = state.step === 1 && (!state.fakeReady || state.elapsed > state.fakeUntil);
+    const made = held >= .12 && value >= low && value <= high && !blocked;
     cancelCharge();
-    if (held < .12) { announce('Hold the button down, then release when the needle reaches green.'); return; }
-    feedback(made ? 'PERFECT RELEASE' : value < .66 ? 'EARLY RELEASE' : 'LATE RELEASE', made);
-    if (state.phase === 'steal') {
-      if (made) {
-        sound('steal'); callout('STOLEN BY McGRADY!');
-        announce('Brown loses it! Push up the floor. One three to win.');
-        transition(1.8, () => ready(4), { x: plays[4].x, y: plays[4].y });
-      } else {
-        state.remaining = Math.max(0, state.remaining - 1); sound('miss'); callout('REACH AGAIN.', .75);
-        announce('Missed the ball. One second lost. Hold and release in green to steal.');
-        if (state.remaining <= 0) end(false);
-      }
+    if (state.step === 1 && blocked) {
+      state.phase = 'pump'; state.phaseTime = 0; state.fakeReady = true; state.fakeUntil = state.elapsed + 1.78; setAction(true);
+      announce('Duncan leaves his feet. Now press again and hold to shoot.');
       return;
     }
+    if (held < .12) { announce('Hold, don’t tap. Let go when the white line above T-Mac reaches green.'); updateCue(); return; }
+    feedback(blocked ? 'DUNCAN BLOCKS IT' : made ? 'PERFECT RELEASE' : value < low ? 'EARLY RELEASE' : 'LATE RELEASE', made);
     state.attempts++; if (made) state.perfect++;
     state.phase = 'shot'; state.phaseTime = 0; setAction(false); sound('release');
     const start = point(state.player.x, state.player.y, 90);
-    state.shot = { start, made, value, duration: state.step === 4 && !reduced.matches ? 1.6 : 1.08, end: { x: rim.x + (made ? 0 : value < .66 ? -21 : 23), y: rim.y + (made ? 0 : 8) } };
+    state.shot = { start, made, value, blocked, player: { ...state.player }, duration: state.step === 4 && !reduced.matches ? 1.6 : 1.08, end: { x: rim.x + (made ? 0 : value < low ? -21 : 23), y: rim.y + (made ? 0 : 8) } };
     if (state.step === 4) state.lastShot = { ...state.shot };
-    announce(state.step === 4 ? 'For the lead…' : made ? 'Perfect release. It’s on its way…' : value < .66 ? 'Early release…' : 'Late release…');
+    announce(blocked ? 'Duncan stays down. Pump fake first.' : state.step === 4 ? 'For the lead…' : made ? 'Perfect release. It’s on its way…' : value < low ? 'Early release…' : 'Late release…');
   }
   function transition(duration, next, target) {
     state.phase = 'transition'; state.phaseTime = 0; state.phaseDuration = duration;
@@ -231,9 +283,15 @@
     setAction(false);
   }
   function ready(step) {
+    $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
     state.step = step; state.phase = 'ready'; state.phaseTime = 0; state.shot = null;
     state.player = { x: plays[step].x, y: plays[step].y };
+    state.fakeReady = false;
+    if (step === 4) {
+      state.phase = 'pullup'; state.runStarted = false; state.from = { x: 12, y: 385 }; state.target = plays[4]; state.player = { ...state.from };
+    }
     $('play-label').textContent = plays[step].title; announce(plays[step].prompt); setAction(true); updateHUD();
+    if (step === 4 && state.inputHeld) beginCharge();
     $('broadcast').innerHTML = step === 2 ? 'AND ONE <span>CLOCK STOPPED</span>' : step === 4 ? 'ONE SHOT <span>FOR THE LEAD</span>' : '4TH QUARTER <span>HOUSTON</span>';
   }
   function finishShot() {
@@ -261,12 +319,13 @@
       state.step = 3;
       transition(2.1, () => { state.away = 80; ready(3); }, plays[3]);
     } else {
-      announce('80–78. Spurs inbound. Brown is trapped. Steal it!');
+      announce('80–78. Spurs inbound. Watch T-Mac go for the steal. No input needed.');
       transition(1.4, () => {
         state.step = 4; state.phase = 'steal'; state.phaseTime = 0;
         state.player = { x: -42, y: 393 };
-        $('play-label').textContent = '04 / FIRST, STEAL THE INBOUND';
-        announce('Brown stumbles. Hold and release in green to take the ball.'); setAction(true, true); updateHUD();
+        $('play-label').textContent = '04 / THE STEAL — WATCH THIS';
+        state.stealCue = false;
+        announce('The steal is automatic. Next: hold to shoot, then let go in green.'); setAction(false); updateHUD();
       }, { x: -42, y: 393 });
     }
   }
@@ -331,12 +390,6 @@
     arc(0, 52, 237.5, cornerAngle, Math.PI - cornerAngle, '#f6e4c3', 2.4);
     arc(0, 470, 61, Math.PI, 2 * Math.PI, '#b0273c', 2.4);
     for (const y of [70, 99, 126, 155]) for (const s of [-1, 1]) line(point(s * 80, y), point(s * 89, y), '#f6e4c3', 2);
-    const logo = point(0, 414);
-    c.save(); c.translate(logo.x, logo.y); c.scale(1, .63); c.rotate(-.1);
-    ellipse(0, 0, 63, 43, null, '#b0253c', 3);
-    text('R', 0, 33, 96, '#b0253c', 'center', 900, 'Georgia');
-    line({ x: -14, y: 11 }, { x: -20, y: 55 }, '#b0253c', 6); line({ x: 14, y: 11 }, { x: 20, y: 55 }, '#b0253c', 6);
-    c.restore();
     c.save(); c.translate(550, 211); c.scale(1, .63); text('H O U S T O N   R O C K E T S', 0, 0, 17, '#f2e7d5', 'center', 700); c.restore();
     c.save(); const loc = point(-172, 181); c.translate(loc.x, loc.y); c.rotate(-.12); c.scale(1, .65);
     text('TOYOTA', 0, 0, 17, '#8f2537', 'center', 700); text('CENTER', 0, 18, 11, '#8f2537', 'center', 600); c.restore();
@@ -365,6 +418,11 @@
     for (let x = 100; x < 1100; x += 225) text(x % 2 ? 'HOUSTON' : 'BE PART OF SOMETHING', x, 186, 9, '#ddd9bd', 'center', 600);
     text('HOUSTON', 545, 186, 11, '#f1e1c5');
     ctx.drawImage(floor, 0, 0);
+    if (rocketsMark?.complete && rocketsMark.naturalWidth > 0) {
+      const logo = point(0, 415);
+      ctx.save(); ctx.translate(logo.x, logo.y); ctx.scale(1, .56);
+      ctx.globalAlpha = .92; ctx.drawImage(rocketsMark, -50, -78, 100, 133); ctx.restore();
+    }
     // Courtside chairs, media table, and bench silhouettes.
     for (const side of [-1, 1]) for (let i = 0; i < 9; i++) {
       const p = point(side * 264, 38 + i * 36);
@@ -402,14 +460,15 @@
   }
   function player(p, t) {
     const loc = point(p.x, p.y), scale = (1 + p.y / 850) * (p.tall || 1);
-    const moving = p.main && state.phase === 'transition';
+    const moving = p.main && (state.phase === 'transition' || (state.phase === 'pullup' && state.runStarted));
     const run = reduced.matches ? 0 : Math.sin(t * (moving ? 13 : 3) + (p.number || 0)) * (moving ? 10 : 2);
     const shotTime = state.shot ? state.phaseTime * 1.08 / state.shot.duration : state.phaseTime;
-    const shooting = p.main && (state.charge !== null || (state.shot && shotTime < .65));
+    const shooting = p.main && (state.phase === 'pump' || state.charge !== null || (state.shot && shotTime < .65));
     const shotJump = shooting && state.shot ? Math.sin(clamp(shotTime / .65) * Math.PI) * 20 : 0;
     const defending = !p.home && p.contest;
-    const contesting = defending && (state.charge !== null || (state.shot && shotTime < .55));
-    const lift = contesting ? Math.sin(clamp(state.charge !== null ? (state.elapsed - state.charge) / .9 : shotTime / .55) * Math.PI) * 14 : 0;
+    const fakeJump = state.step === 1 && (state.phase === 'pump' || (state.fakeReady && state.elapsed < state.fakeUntil));
+    const contesting = defending && (fakeJump || state.charge !== null || (state.shot && shotTime < .55));
+    const lift = fakeJump && defending ? 24 * Math.sin(clamp(state.phase === 'pump' ? state.phaseTime / .76 : 1 - (state.fakeUntil - state.elapsed) / 1.4 * .5) * Math.PI) : contesting ? Math.sin(clamp(state.charge !== null ? (state.elapsed - state.charge) / .9 : shotTime / .55) * Math.PI) * 14 : 0;
     const celebrating = p.home && ['celebrating', 'won'].includes(state.mode);
     const celebrationJump = celebrating && !reduced.matches ? Math.max(0, Math.sin(t * 6 + p.number)) * 11 : 0;
     ellipse(loc.x, loc.y + 1, 15 * scale, 5 * scale, '#32270c49');
@@ -444,6 +503,10 @@
     if (p.main) line(elbowL, { x: lerp(elbowL.x, leftHand.x, .6), y: lerp(elbowL.y, leftHand.y, .6) }, '#e8e5d6', 5.4);
     path([{ x: -9, y: -61 }, { x: -3, y: -63 }, { x: 3, y: -63 }, { x: 10, y: -60 }, { x: 12, y: -35 }, { x: -12, y: -35 }], cloth, edge, .7);
     line({ x: -10, y: -57 }, { x: -11, y: -37 }, trim, 2.1); line({ x: 10, y: -57 }, { x: 11, y: -37 }, trim, 2.1);
+    if (p.home) {
+      line({ x: -7.5, y: -57 }, { x: -8.5, y: -37 }, trim, .8);
+      line({ x: 7.5, y: -57 }, { x: 8.5, y: -37 }, trim, .8);
+    }
     path([{ x: -4, y: -62 }, { x: 0, y: -58 }, { x: 4, y: -62 }], null, trim, 1.4, false);
     text(p.main ? 'McGRADY' : p.home ? 'ROCKETS' : 'SPURS', 0, -51, p.main ? 3.7 : 4.1, trim, 'center', 800);
     text(String(p.number), 0, -39, 12, trim, 'center', 700);
@@ -462,20 +525,14 @@
     ctx.restore();
     if (p.main && state.mode === 'playing' && !state.shot) {
       text(state.phase === 'steal' ? 'STEAL' : 'McGRADY', loc.x, loc.y + 33 * scale, 9, '#f5f2df', 'center', 700, 'monospace');
-      if (state.charge !== null) {
-        const x = loc.x - 32, y = loc.y - 119 * scale;
-        ctx.fillStyle = '#10190fe8'; ctx.fillRect(x - 3, y - 3, 70, 13);
-        ctx.fillStyle = '#445039'; ctx.fillRect(x, y, 64, 7);
-        ctx.fillStyle = '#d7f675'; ctx.fillRect(x + 64 * .66, y, 64 * .18, 7);
-        ctx.fillStyle = '#ffffff'; ctx.fillRect(x + meterValue() * 64 - 1, y - 2, 3, 11);
-      }
+
     }
   }
   function drawPlayers(t) {
     const p = state.player;
     const drift = reduced.matches ? 0 : Math.sin(t * 1.7) * 7;
     const ft = state.step === 2;
-    const closeout = state.charge === null ? 0 : ease(clamp((state.elapsed - state.charge) / .8));
+    const closeout = state.step === 3 && state.phase === 'ready' ? ease(clamp(state.phaseTime / 2.1)) : state.phase === 'pullup' && state.runStarted ? ease(clamp(state.phaseTime / 1.8)) : state.charge === null ? 0 : ease(clamp((state.elapsed - state.charge) / .8));
     const defenders = [
       { x: ft ? -89 : p.x - 31 + drift + closeout * 17, y: ft ? 145 : p.y - 55 + closeout * 27, number: state.step === 1 ? 21 : state.step === 4 ? 17 : 12, home: false, contest: !ft, skin: '#795239', tall: state.step === 1 ? 1.09 : 1 },
       { x: ft ? 90 : -72, y: 94 + drift, number: state.step === 1 ? 12 : 21, home: false, tall: 1.12, skin: '#997052' },
@@ -485,7 +542,11 @@
     ];
     if (state.phase === 'steal') {
       defenders[0].x = -12 + Math.sin(t * 4) * 6; defenders[0].y = 408; defenders[0].number = 23;
-      defenders[0].contest = false; defenders[0].ball = true;
+      defenders[0].contest = false; defenders[0].ball = !state.stealCue;
+      if (state.stealCue) {
+        const loose = point(-27, 413);
+        basketball(loose.x, loose.y - 8 - Math.abs(Math.sin(t * 9)) * 6, 8, t * 3);
+      }
     }
     const teammates = [
       { x: ft ? -89 : 84, y: ft ? 120 : 116, home: true, number: 11, tall: 1.23, skin: '#c09a76' },
@@ -520,7 +581,7 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#111810'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, (state.width / 2 - state.cameraX * scale) * dpr, (state.height / 2 - 310 * scale) * dpr);
-    drawArena(t); drawHoop(t); drawPlayers(t); drawShot();
+    drawArena(t); drawHoop(t); drawPlayers(t); drawShot(); updateCue();
     const vignette = ctx.createRadialGradient(550, 330, 170, 550, 300, 650);
     vignette.addColorStop(0, '#09150e00'); vignette.addColorStop(1, '#09150e70'); ctx.fillStyle = vignette; ctx.fillRect(0, 0, 1100, 620);
     // Subtle broadcast scanlines; no flashes or camera shake.
@@ -543,6 +604,21 @@
       if (state.remaining <= 0 && state.phase !== 'shot') end(false);
       if (state.mode === 'playing') {
         if (state.phase === 'shot' && state.phaseTime >= state.shot.duration) finishShot();
+        else if (state.phase === 'pump' && state.phaseTime >= .38) {
+          state.phase = 'ready'; state.phaseTime = 0; state.fakeReady = true; state.fakeUntil = state.elapsed + 1.4;
+          setAction(true); announce('He’s in the air. Hold, then release in green!');
+        } else if (state.phase === 'steal') {
+          state.stealCue = state.phaseTime >= 1.1;
+          if (state.phaseTime >= 1.85) collectSteal();
+        } else if (state.phase === 'pullup' && state.runStarted) {
+          const move = ease(clamp(state.phaseTime / 1.15));
+          state.player.x = lerp(state.from.x, state.target.x, move); state.player.y = lerp(state.from.y, state.target.y, move);
+        } else if (state.phase === 'ready' && state.step === 3 && state.phaseTime > 2.1) {
+          cancelCharge(); feedback('BOWEN CLOSES THE GAP', false); announce('No room. Shoot earlier on the next catch.');
+          transition(.75, () => ready(3));
+        } else if (state.phase === 'ready' && state.step === 1 && state.fakeReady && state.elapsed > state.fakeUntil) {
+          state.fakeReady = false; setAction(true); announce('Duncan lands. Press and release once to fake again, then hold to shoot.');
+        }
         else if (state.phase === 'transition') {
           const progress = ease(clamp(state.phaseTime / state.phaseDuration));
           state.player.x = lerp(state.from.x, state.target.x, progress); state.player.y = lerp(state.from.y, state.target.y, progress);
@@ -561,7 +637,9 @@
       }
     } else if (state.mode === 'celebrating') {
       state.celebrationTime += dt;
-      if (state.celebrationTime >= 2) end(true);
+      if (state.celebrationTime >= 2) {
+        if (!reduced.matches && !state.filmShown && window.TmacFilm) originalFilm(); else end(true);
+      }
     } else if (state.mode === 'replay') {
       state.replayTime += dt; state.phaseTime = state.replayTime;
       if (state.replayTime >= state.shot.duration) {
@@ -571,11 +649,12 @@
     }
     updateCamera(dt);
     // Pausing freezes the scene; offscreen and reduced-motion idle states do not repaint.
-    if (state.inView && state.mode !== 'paused' && (!reduced.matches || ['playing', 'replay', 'celebrating'].includes(state.mode))) render(state.mode === 'playing' ? state.elapsed : state.mode === 'replay' ? state.elapsed + state.replayTime * .4 : reduced.matches ? 0 : now / 1000);
+    if (state.inView && !['paused', 'film'].includes(state.mode) && (!reduced.matches || ['playing', 'replay', 'celebrating'].includes(state.mode))) render(state.mode === 'playing' ? state.elapsed : state.mode === 'replay' ? state.elapsed + state.replayTime * .4 : reduced.matches ? 0 : now / 1000);
     requestAnimationFrame(tick);
   }
   $('start').addEventListener('click', startGame);
   $('replay').addEventListener('click', replay);
+  $('original').addEventListener('click', originalFilm);
   $('audio').addEventListener('click', toggleSound);
   $('pause').addEventListener('click', () => state.mode === 'paused' ? resume() : pause());
   $('shoot').addEventListener('pointerdown', e => {
@@ -584,9 +663,12 @@
     $('shoot').setPointerCapture(e.pointerId); beginCharge();
   });
   $('shoot').addEventListener('pointerup', release);
-  $('shoot').addEventListener('pointercancel', cancelCharge);
-  $('shoot').addEventListener('lostpointercapture', cancelCharge);
+  $('shoot').addEventListener('pointercancel', () => { state.inputHeld = false; cancelCharge(); updateCue(); });
+  $('shoot').addEventListener('lostpointercapture', () => { state.inputHeld = false; cancelCharge(); updateCue(); });
   root.addEventListener('keydown', e => {
+    if (e.code === 'KeyR' && !e.repeat && state.mode !== 'film') {
+      e.preventDefault(); state.mode = 'intro'; startGame();
+    }
     if ((e.code === 'Space' || e.code === 'Enter') && (e.target === stage || e.target === $('shoot'))) {
       e.preventDefault(); if (!e.repeat) beginCharge();
     }
@@ -604,6 +686,7 @@
   document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
   window.addEventListener('blur', pause);
   $('exit').addEventListener('click', () => {
+    if (state.mode === 'film') { window.TmacFilm?.close(false); end(true); }
     if (state.mode === 'replay' || state.mode === 'celebrating') { state.shot = null; end(true); }
     pause(); root.classList.remove('is-focused');
     resize();

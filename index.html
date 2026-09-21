@@ -38,7 +38,8 @@
             <p id="moment-overlay-body">Down eight. Four threes. One free throw.<br>Give them a reason to turn around.</p>
             <button id="moment-start" class="moment-primary" type="button">MAKE THEM BELIEVE <span aria-hidden="true">↗</span></button>
             <button class="moment-replay" id="moment-replay" type="button" hidden>WATCH THE WINNER ↺</button>
-            <span class="moment-start-hint" id="moment-start-hint">Hold to shoot. Release in the green.</span>
+            <button class="moment-replay" id="moment-original" type="button" hidden>THE REAL T-MAC ↗</button>
+            <span class="moment-start-hint" id="moment-start-hint">Watch the meter above T-Mac. Hold, then let go in green.</span>
           </div>
           <span class="moment-edition">THE TMACFORMVP ORIGIN STORY / VOL. 01</span>
         </div>
@@ -46,17 +47,28 @@
         <div class="moment-feedback" id="moment-feedback" aria-hidden="true"></div>
         <div class="moment-broadcast" id="moment-broadcast">4TH QUARTER <span>HOUSTON</span></div>
         <div class="moment-player-tag" id="moment-player-tag">McGRADY <b>1</b></div>
+        <div class="moment-cue" id="moment-cue" hidden>
+          <span class="moment-cue-step" id="moment-cue-step"></span>
+          <strong id="moment-meter-label">HOLD TO SHOOT</strong>
+          <div class="moment-meter" id="moment-meter" role="meter" aria-label="Shot release timing above McGrady" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="moment-green"></span><i id="moment-needle"></i></div>
+          <span class="moment-cue-hint" id="moment-cue-hint">Hold Space or the button below.</span>
+        </div>
+        <div class="moment-film" id="moment-film" role="dialog" aria-modal="true" aria-labelledby="moment-film-title" hidden>
+          <div class="moment-film-header"><div><p>YOU MADE THE SHOT. HE MADE HISTORY.</p><h3 id="moment-film-title">Houston. December 9, 2004.</h3></div><button id="moment-film-skip" type="button">SKIP TO RESULTS ↗</button></div>
+          <div class="moment-film-player" id="moment-film-player"></div>
+          <div class="moment-film-footer"><p id="moment-film-status" role="status">The real finish, from the ESPN archive.</p><a href="https://www.youtube.com/watch?v=s4QuUYG6kxI&amp;t=44s" target="_blank" rel="noopener">Watch on YouTube ↗</a></div>
+        </div>
       </div>
       <div class="moment-controls">
         <div class="moment-possession"><span id="moment-play-label">THE FIRST THREE</span><p id="moment-status" role="status" aria-live="polite">An eight-point deficit. An impossible assignment.</p></div>
-        <div class="moment-release"><div class="moment-meter" id="moment-meter" role="meter" aria-label="Shot release timing" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="moment-green"></span><i id="moment-needle"></i></div><span id="moment-meter-label">RELEASE IN THE GREEN</span></div>
         <button class="moment-shoot" id="moment-shoot" type="button" disabled>HOLD TO SHOOT <span>SPACE</span></button>
       </div>
       <div class="moment-footer"><ol class="moment-sequence" aria-label="Scoring sequence"><li data-step="0"><span>01</span> THE SPARK <b>3</b></li><li data-step="1"><span>02</span> AND ONE <b>3+1</b></li><li data-step="3"><span>03</span> STILL ALIVE <b>3</b></li><li data-step="4"><span>04</span> THE DAGGER <b>3</b></li></ol><p id="moment-progress">0 / 13 PTS</p></div>
-      <p class="moment-note" id="moment-instructions">A playable tribute. Hold <kbd>Space</kbd> or the shot button; release in green. <kbd>P</kbd> to pause. A 33-second arcade clock, with a stop for the free throw. <a href="https://www.nba.com/watch/video/tdih-tracy-mcgrady-scores-13-points-in-33-seconds-v-sas-in-2004" target="_blank" rel="noopener">Watch the real moment ↗</a></p>
+      <p class="moment-note" id="moment-instructions">Watch the meter above T-Mac. Hold <kbd>Space</kbd> or the shot button, then let go in green. Against Duncan: press and release once to fake, then hold to shoot. The steal happens automatically; hold to take the final shot. <kbd>P</kbd> pauses; <kbd>R</kbd> restarts. A 33-second arcade tribute, with a stop for the free throw. <a href="https://www.nba.com/watch/video/tdih-tracy-mcgrady-scores-13-points-in-33-seconds-v-sas-in-2004" target="_blank" rel="noopener">The real moment ↗</a></p>
     </div>
 </main>
 <footer class="site-footer"><span>Twenty years of the same game.</span><span>Vikram Dimba · New York City</span></footer>
+<script src="tmac-film.js" defer></script>
 <script src="tmac-game.js" defer></script>
 </body>
 </html>

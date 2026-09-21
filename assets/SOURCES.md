@@ -1,0 +1,5 @@
+# Historical assets
+
+- `rockets-2003.svg`: Houston Rockets 2003 icon, retrieved from [Logos Download](https://logos-download.com/brands/houston-rockets), [source SVG](https://i.logos-download.com/4082/31655-2aedccbddfd3ffce53257949c4671df1.svg/Houston_Rockets_Logo_2003_icon.svg). Geometry and colors retained; unused gradient definitions and export metadata removed, viewBox added. The Houston Rockets own their team mark. This site is an independent fan tribute, not an official team site.
+- The ending uses ESPN's official [SportsCenter archive upload](https://www.youtube.com/watch?v=s4QuUYG6kxI), embedded through the official YouTube IFrame API. No footage is downloaded or redistributed. Segment: 0:44–1:00, showing the steal, final shot, and replay. Verified playback in the local browser. NBA uploads DF0SdKpErXA and 9C6gDS9YGAU returned embed error 150, so they are not used for the ending.
+- Reference player documentation: [parameters](https://developers.google.com/youtube/player_parameters), [IFrame API](https://developers.google.com/youtube/iframe_api_reference).

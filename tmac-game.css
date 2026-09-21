@@ -100,7 +100,7 @@
 @media(prefers-reduced-motion:reduce){.moment *{transition:none!important;scroll-behavior:auto}}
 /* Keep the page quiet and the game legible. Canvas handles the camera at every size. */
 .moment h2{font-size:clamp(26px,3.4vw,42px)}
-.moment-stage{aspect-ratio:1100/550;min-height:420px}
+.moment-stage{width:100%;aspect-ratio:1100/550;min-height:420px}
 .moment-heading{margin-bottom:18px}.moment-heading .moment-eyebrow{font-size:10px}.moment-location{font-size:10px}
 .moment-team>span{font-size:12px}.moment-clock span{font-size:10px}
 .moment-tools button{font-size:11px;min-height:38px}.moment-tools{z-index:4}
@@ -115,6 +115,18 @@
 .moment-broadcast{position:absolute;left:24px;bottom:20px;color:#eef1df;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;background:#11190dd9;padding:9px 11px;border-left:2px solid var(--lime)}.moment-broadcast span{color:#a3af97;margin-left:13px}
 .moment.is-clutch .moment-stage{border-color:#9a6341}.moment.is-clutch .moment-controls{border-color:#9a6341}
 .moment.is-replay .moment-broadcast{color:var(--lime)}
+.moment-overlay{overflow-y:auto}.moment-overlay-copy{margin-block:auto}
+.moment-film{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;gap:16px;padding:24px;background:#080c08;overflow:auto}
+.moment-film[hidden]{display:none}
+.moment-film-header,.moment-film-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-shrink:0}
+.moment-film-header p{font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.09em;color:var(--lime);margin-bottom:7px}
+.moment-film-header h3{font-size:20px;letter-spacing:-.025em}
+.moment-film-header button{background:transparent;color:#e3ecd5;border:1px solid #677456;border-radius:3px;min-height:40px;padding:9px 12px;font-size:10px;white-space:nowrap}
+.moment-film-player{position:relative;flex:1;min-height:200px;width:100%;background:#000}
+.moment-film-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.moment-film-footer{font:400 10px/1.6 'IBM Plex Mono',monospace;color:#9fa995}
+.moment-film-footer a{color:var(--lime);white-space:nowrap;text-underline-offset:3px}
+@media(max-width:600px){.moment-film{padding:14px;gap:14px}.moment-film-header{align-items:start;flex-direction:column;gap:12px}.moment-film-header h3{font-size:18px}.moment-film-header p{font-size:9px}.moment-film-footer{align-items:start;flex-direction:column;gap:8px}}
 @media(max-width:860px){.moment-controls{grid-template-columns:1fr 140px 190px;gap:18px}.moment-sequence{gap:16px}.moment-sequence li>span{display:none}.moment-sequence li{font-size:9px}.moment-shoot{font-size:11px}}
 @media(max-width:600px){
  .site-opening,.game-home,.site-footer{padding-left:14px;padding-right:14px}.site-opening{padding-top:16px;padding-bottom:20px}.identity{font-size:12px}.opening-copy{display:block;margin:18px 0 14px}.opening-copy h1{font-size:27px}.opening-copy p{margin-top:12px;font-size:13px}.opening-copy p br{display:none}.work-links{gap:9px 16px;font-size:12px}.work-links>span{display:none}
@@ -125,3 +137,15 @@
  .moment-player-tag{font-size:10px}.moment-broadcast{left:12px;bottom:14px;font-size:9px;padding:6px 8px}.moment-broadcast span{display:none}.moment-feedback{left:12px;top:109px;font-size:10px}
  .moment.is-focused .moment-heading h2{font-size:23px}.moment.is-focused .moment-stage{min-height:290px}.moment.is-focused .moment-sequence{gap:7px 12px}.moment-replay{font-size:10px;min-height:36px;padding:8px 12px}.site-footer{font-size:10px;gap:14px;padding-top:20px}
 }
+/* One timing cue, attached to the player, for every shot. */
+.moment-cue{position:absolute;z-index:3;width:220px;max-width:calc(100% - 24px);padding:12px;display:grid;gap:8px;transform:translate(-50%,-100%);background:#111b10f5;border:1px solid #879a60;border-radius:6px;box-shadow:0 5px 20px #0006;pointer-events:none;font-family:'IBM Plex Mono',monospace}
+.moment-cue[hidden],.moment-cue .moment-meter[hidden]{display:none}
+.moment-cue::after{content:'';position:absolute;bottom:-6px;left:calc(50% - 5px);width:10px;height:10px;background:#111b10;border-right:1px solid #879a60;border-bottom:1px solid #879a60;transform:rotate(45deg)}
+.moment-cue-step{font-size:9px;letter-spacing:.06em;color:var(--lime)}
+.moment-cue strong{font-size:13px;line-height:1.2;color:#fffef1}
+.moment-cue-hint{font-size:10px;line-height:1.45;color:#c6cfbc}
+.moment-cue .moment-meter{height:13px;margin:2px 0}
+.moment-cue.is-green{border-color:var(--lime)}
+.moment-cue.is-waiting{border-color:#647356}.moment-cue.is-waiting .moment-cue-step{color:#aebba0}
+.moment-controls{grid-template-columns:minmax(0,1fr) 210px}
+@media(max-width:600px){.moment-controls{grid-template-columns:1fr;gap:10px}.moment-possession{min-height:0}.moment-shoot{grid-column:1/-1;justify-content:center;min-height:48px}.moment-cue{gap:7px;padding:11px}}
