@@ -209,3 +209,9 @@ body:has(.moment.is-focused) .built-by{display:block;flex-shrink:0;font:400 10px
 .has-docked-cue .moment-controls>.moment-possession{grid-column:1;grid-row:1;min-height:0}
 .has-docked-cue .moment-controls:has(.moment-cue:not([hidden]))>.moment-possession{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .has-docked-cue .moment-controls>.moment-shoot{grid-column:1;grid-row:2;justify-content:center;min-height:48px}
+/* Game buttons live in the TV's top bezel so they never cover the court */
+.moment-tv-top .moment-tools{position:static;margin-left:auto;gap:6px}.moment-tv-top .moment-tools button{min-height:28px;padding:4px 10px;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.06em}
+.moment-tv-top .moment-tv-mode{margin-left:auto}.moment-tv-top .moment-tv-mode+.moment-tools{margin-left:14px}
+.moment.is-focused .moment-tv-top .moment-tools button{min-height:26px}
+@media(max-width:860px){.moment-tv-top .moment-tv-mode{display:none}}
+@media(max-width:600px){.moment-tv-top .moment-tools{gap:5px}.moment-tv-top .moment-tools button{min-height:30px;padding:4px 8px;font-size:9px}.moment.is-focused .moment-tv-top .moment-tools button{min-height:26px}.moment.is-focused .moment-tv-top{min-height:36px}}

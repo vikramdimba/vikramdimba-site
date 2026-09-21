@@ -20,8 +20,8 @@
     mode: 'intro', phase: 'ready', step: 0, home: 68, away: 76, remaining: 33,
     elapsed: 0, charge: null, shot: null, phaseTime: 0, phaseDuration: 0,
     next: null, player: { x: 110, y: 310 }, from: null, target: null,
-    made: new Set(), attempts: 0, perfect: 0, call: '', callUntil: 0, cheer: 0, result: null,
-    sound: false, audio: null, previous: 0, inView: true, lastBounce: 0,
+    made: new Set(), attempts: 0, perfect: 0, call: '', callUntil: 0, cheer: 0, result: null, shareFile: null,
+    sound: true, audio: null, previous: 0, inView: true, lastBounce: 0,
     cameraX: 550, cameraZoom: 1, width: 1100, height: 620, feedbackUntil: 0,
     lastShot: null, celebrationTime: 0, replayTime: 0, best: null, lastTick: 33,
     fakeReady: false, fakeUntil: 0, stealCue: false, inputHeld: false, runStarted: false, filmShown: false
@@ -96,18 +96,25 @@
     if (kind === 'whistle') tone(2100, 2300, .22, .035, 'sine');
     if (kind === 'tick') tone(360, 300, .065, .025, 'triangle');
   }
-  async function toggleSound() {
+  // Sound is on by default; the audio context can only start from a tap, so Play and the
+  // sound button both unlock it. 'playback' lets iPhones play it with the silent switch on.
+  function unlockAudio() {
+    try { if (window.navigator?.audioSession) window.navigator.audioSession.type = 'playback'; } catch (_) {}
     if (!state.audio) {
       const Audio = window.AudioContext || window.webkitAudioContext;
-      if (!Audio) { announce('Sound is unavailable in this browser. You can still play.'); return; }
+      if (!Audio) return Promise.resolve(false);
       state.audio = new Audio();
     }
-    try { await state.audio.resume(); } catch (_) { announce('Sound could not start. You can still play.'); return; }
+    return state.audio.resume().then(() => true, () => false);
+  }
+  async function toggleSound() {
     state.sound = !state.sound;
     $('audio').textContent = state.sound ? 'SOUND ON' : 'SOUND OFF';
     $('audio').setAttribute('aria-pressed', String(state.sound));
     $('audio').setAttribute('aria-label', state.sound ? 'Mute game sound' : 'Enable game sound');
-    if (state.sound) sound('bounce');
+    if (!state.sound) return;
+    if (!(await unlockAudio())) { announce('Sound is unavailable in this browser. You can still play.'); return; }
+    sound('bounce');
   }
   function setText(id, value) {
     const el = $(id), next = String(value);
@@ -178,6 +185,7 @@
     updateCue();
   }
   function startGame() {
+    if (state.sound) unlockAudio();
     window.TmacFilm?.close(false);
     window.TmacFilm?.prepare?.();
     root.classList.add('is-focused');
@@ -231,11 +239,12 @@
     $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
     const used = (33 - state.remaining).toFixed(1);
     state.result = { won, used, points: state.home - 68, shots: state.attempts };
+    state.shareFile = null; makeShareCard(state.result);
     if (won) {
       state.cheer = 4;
       if (state.best === null || Number(used) < state.best) state.best = Number(used);
       announce(`Houston 81, San Antonio 80. You scored 13 points in ${used} seconds.`);
-      showOverlay('HOUSTON 81. SAN ANTONIO 80.', 'They believe now.', `13 points. ${state.attempts} shots. And that’s why the username is TMACFORMVP.`, 'RUN IT BACK ↗');
+      showOverlay('HOUSTON 81. SAN ANTONIO 80.', 'They believe now.', `13 points in ${used} seconds, on ${state.attempts} shots. And that’s why the username is TMACFORMVP.`, 'RUN IT BACK ↗');
       $('start-hint').textContent = `Your best this visit: 13 in ${state.best.toFixed(1)} seconds.`;
       $('broadcast').innerHTML = 'FINAL <span>HOUSTON WINS</span>';
     } else {
@@ -257,12 +266,48 @@
     document.body.appendChild(area); area.select();
     const ok = document.execCommand('copy'); area.remove(); return ok;
   }
+  // The result card is drawn when a run ends, so tapping Share can open the share sheet
+  // immediately (iPhones refuse a share that waits on image encoding after the tap).
+  function makeShareCard(r) {
+    const card = document.createElement('canvas');
+    if (!card.getContext || !card.toBlob) return;
+    card.width = 1200; card.height = 630;
+    const c = card.getContext('2d'), lime = '#d7f675', mono = "500 18px 'IBM Plex Mono', monospace";
+    c.fillStyle = '#111510'; c.fillRect(0, 0, 1200, 630);
+    c.save(); c.translate(930, 315); c.scale(11, 11); c.translate(-32, -32);
+    c.strokeStyle = 'rgba(215,246,117,.14)'; c.lineWidth = .9; c.lineCap = 'round';
+    c.stroke(new Path2D('M53 32a21 21 0 1 1-42 0a21 21 0 1 1 42 0M11 32h42M32 11v42M17.5 16.5c6 4.5 9 10 9 15.5s-3 11-9 15.5M46.5 16.5c-6 4.5-9 10-9 15.5s3 11 9 15.5'));
+    c.restore();
+    c.font = mono; c.fillStyle = '#8e9a80'; c.textBaseline = 'alphabetic';
+    c.fillText(r.won ? 'HOUSTON 81 · SAN ANTONIO 80 · FINAL' : 'HOUSTON · DEC 09, 2004', 72, 90);
+    c.textAlign = 'right'; c.fillText('13 IN 33 · PLAYABLE ARCADE', 1128, 90); c.textAlign = 'left';
+    c.font = "700 128px Inter, system-ui, sans-serif"; c.fillStyle = r.won ? lime : '#f6f2e8';
+    c.fillText(r.won ? `${r.used}s` : `${r.points}/13`, 66, 270);
+    c.font = "500 58px Newsreader, Georgia, serif"; c.fillStyle = '#f6f2e8';
+    c.fillText(r.won ? '13 points. I did what T-Mac did.' : 'points in 33 seconds. Almost a miracle.', 72, 360);
+    c.font = mono; c.fillStyle = '#c1cab7';
+    c.fillText(r.won ? `${r.shots} SHOTS · 4 THREES AND A FREE THROW` : 'THE CLOCK DOESN’T NEGOTIATE', 72, 420);
+    c.fillStyle = lime; c.beginPath(); if (c.roundRect) c.roundRect(72, 488, 318, 66, 4); else c.rect(72, 488, 318, 66); c.fill();
+    c.font = "600 21px Inter, system-ui, sans-serif"; c.fillStyle = '#18220f';
+    c.fillText(r.won ? 'CAN YOU BEAT IT? ↗' : 'FINISH THE COMEBACK ↗', 98, 529);
+    c.font = "500 20px 'IBM Plex Mono', monospace"; c.fillStyle = '#c1cab7'; c.textAlign = 'right';
+    c.fillText('VIKRAMDIMBA.COM', 1128, 529);
+    card.toBlob(blob => {
+      if (blob && state.result === r) state.shareFile = new File([blob], '13-in-33.png', { type: 'image/png' });
+    }, 'image/png');
+  }
   async function share() {
     if (!state.result) return;
     const text = shareText(), url = 'https://vikramdimba.com';
     const label = done => { $('share').textContent = done; };
+    const nav = window.navigator || {};
     try {
-      if (navigator.share) { await navigator.share({ title: '13 in 33', text, url }); return; }
+      if (nav.share) {
+        const files = state.shareFile ? [state.shareFile] : [];
+        const withImage = files.length && nav.canShare?.({ files });
+        await nav.share(withImage ? { files, text: `${text} ${url}` } : { title: '13 in 33', text, url });
+        return;
+      }
       if (!(await copy(`${text} ${url}`))) throw new Error('copy failed');
       label('COPIED. PASTE IT ANYWHERE ✓');
     } catch (e) {
