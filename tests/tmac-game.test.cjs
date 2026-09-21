@@ -256,12 +256,13 @@ test('winning opens the film once, freezes the score, and skip returns to result
   assert.equal(g.state.mode, 'won'); assert.equal(count, 1);
 });
 
-test('reduced motion makes the real footage optional, including after replay', () => {
-  let count = 0;
-  const g = game({ film: { close: () => {}, show: () => { count++; } } });
-  reachWinner(g); g.advance(1.1); assert.equal(g.state.mode, 'won'); assert.equal(count, 0);
-  g.emit('moment-replay', 'click'); g.advance(4.1); assert.equal(count, 0);
-  g.emit('moment-original', 'click'); assert.equal(count, 1); assert.equal(g.state.mode, 'film');
+test('reduced motion goes directly to the automatic film, without replaying it twice', () => {
+  let count = 0, finish;
+  const g = game({ film: { close: () => {}, show: o => { count++; finish = o.onClose; } } });
+  reachWinner(g); g.advance(1.1); assert.equal(g.state.mode, 'film'); assert.equal(count, 1);
+  finish(); assert.equal(g.state.mode, 'won');
+  g.emit('moment-replay', 'click'); g.advance(4.1); assert.equal(count, 1);
+  g.emit('moment-original', 'click'); assert.equal(count, 2); assert.equal(g.state.mode, 'film');
 });
 
 

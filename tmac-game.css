@@ -149,3 +149,20 @@
 .moment-cue.is-waiting{border-color:#647356}.moment-cue.is-waiting .moment-cue-step{color:#aebba0}
 .moment-controls{grid-template-columns:minmax(0,1fr) 210px}
 @media(max-width:600px){.moment-controls{grid-template-columns:1fr;gap:10px}.moment-possession{min-height:0}.moment-shoot{grid-column:1/-1;justify-content:center;min-height:48px}.moment-cue{gap:7px;padding:11px}}
+/* Broadcast-style handoff from the arcade winner to the real footage. */
+.moment-film{animation:moment-film-enter .65s cubic-bezier(.2,.8,.2,1) both}
+.moment-film-screen{position:relative;flex:1;min-height:200px;overflow:hidden;background:#080c08}
+.moment-film-player{position:absolute;inset:0;min-height:0}
+.moment-film-intro{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;text-align:center;background:linear-gradient(130deg,#142111 0%,#142111 65%,#6f1b2d 65%,#a02137 100%);opacity:1;transition:opacity .45s ease,visibility 0s .45s}
+.moment-film-intro.is-finished{opacity:0;visibility:hidden;pointer-events:none}
+.moment-film-intro p,.moment-film-intro>span{font:500 10px/1.5 'IBM Plex Mono',monospace;letter-spacing:.07em;color:#bdcbae}
+.moment-film-intro p b{font-size:17px;color:var(--lime)}
+.moment-film-intro strong{font-size:clamp(30px,5vw,64px);line-height:.98;letter-spacing:-.05em;animation:moment-film-title .75s .1s both}
+.moment-film-intro strong em{font-style:normal;color:var(--lime)}
+#moment-film-play{border:0;border-radius:3px;background:var(--lime);color:#142008;font-size:11px;min-height:44px;padding:12px 16px}
+@keyframes moment-film-enter{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes moment-film-title{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.moment-film,.moment-film-intro strong{animation:none}.moment-film-intro{transition:none}}
+.moment-film-screen{min-height:240px}
+.moment-film-intro:has(button:not([hidden])){gap:10px}
+.moment-film-intro:has(button:not([hidden])) strong{font-size:30px}

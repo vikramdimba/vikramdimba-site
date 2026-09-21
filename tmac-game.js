@@ -154,6 +154,7 @@
   }
   function startGame() {
     window.TmacFilm?.close(false);
+    window.TmacFilm?.prepare?.();
     root.classList.add('is-focused');
     root.classList.remove('is-replay');
     if (state.mode === 'paused') { resume(); return; }
@@ -220,7 +221,7 @@
     cancelCharge(); setAction(false); $('pause').disabled = true;
     $('broadcast').innerHTML = '81–80 <span>HOUSTON LEADS!</span>';
     callout('DO YOU BELIEVE?!', 3); sound('win'); updateHUD();
-    if (reduced.matches) end(true);
+    if (reduced.matches) originalFilm();
   }
   function originalFilm() {
     if (!['won', 'celebrating'].includes(state.mode)) return;
@@ -638,7 +639,7 @@
     } else if (state.mode === 'celebrating') {
       state.celebrationTime += dt;
       if (state.celebrationTime >= 2) {
-        if (!reduced.matches && !state.filmShown && window.TmacFilm) originalFilm(); else end(true);
+        if (!state.filmShown && window.TmacFilm) originalFilm(); else end(true);
       }
     } else if (state.mode === 'replay') {
       state.replayTime += dt; state.phaseTime = state.replayTime;
