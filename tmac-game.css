@@ -1,0 +1,127 @@
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#111510;color:#f6f2e8;font:400 16px/1.6 'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}h1,h2,h3,p{margin:0}a{color:inherit}button{font:inherit}button[hidden]{display:none!important}body:has(.is-focused){overflow:hidden}
+.site-opening,.game-home,.site-footer{max-width:1320px;margin:auto;padding-left:28px;padding-right:28px}
+.site-opening{padding-top:22px;padding-bottom:24px}
+.identity{display:flex;justify-content:space-between;align-items:center;gap:18px;font-size:13px;color:#b6beab}
+.identity a{text-decoration:none}.identity a:first-child{font-weight:600;color:#f1f0e5}.identity a:hover{color:#d7f675}
+.opening-copy{display:flex;align-items:center;justify-content:space-between;gap:32px;margin:18px 0}
+.opening-copy h1{font:500 clamp(25px,2.65vw,35px)/1.05 'Newsreader',Georgia,serif;letter-spacing:-.025em}
+.opening-copy h1 em{font-weight:500;color:#d7f675}.opening-copy p{font-size:14px;line-height:1.65;color:#aab39f}
+.work-links{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap;font-size:12px}.work-links>span{color:#7f8a72;font:400 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em}.work-links a{color:#c1cab7;text-decoration:none;text-underline-offset:4px}.work-links a:hover{color:#d7f675;text-decoration:underline}
+.site-footer{display:flex;justify-content:space-between;gap:20px;padding-top:26px;padding-bottom:30px;font-size:12px;color:#7f8a72}
+.moment{--lime:#d7f675;--red:#ce253c;border-top:1px solid #394033;padding-top:20px;scroll-margin-top:16px}
+.moment-heading{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:22px}
+.moment-eyebrow{font:500 .61rem 'IBM Plex Mono',monospace;letter-spacing:.15em;color:#bbc4ab;text-transform:uppercase;margin:0 0 12px}
+.moment h2{font-family:'Inter',sans-serif;font-size:clamp(2rem,4.5vw,3.45rem);font-weight:700;letter-spacing:-.065em;line-height:1.03;max-width:none;margin:0}
+.moment h2 em{font-style:normal;color:var(--lime)}
+.moment-location{font:500 .62rem/1.7 'IBM Plex Mono',monospace;color:#979e8d;text-align:right;letter-spacing:.09em}
+.moment-stage{position:relative;aspect-ratio:1100/620;overflow:hidden;background:#111510;border:1px solid #444b36;border-bottom:0;border-radius:7px 7px 0 0;isolation:isolate;outline:none}
+.moment-stage:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+#moment-canvas{display:block;position:absolute;inset:0;width:100%;height:100%}
+.moment-scoreboard{position:absolute;top:22px;left:22px;display:flex;box-shadow:0 6px 25px #0006;font-family:'IBM Plex Mono',monospace;border:1px solid #ffffff26;border-radius:3px;overflow:hidden}
+.moment-team{display:flex;align-items:center;gap:19px;background:#242727;padding:9px 13px;border-right:1px solid #ffffff24}
+.moment-team.home{background:#b71f34}
+.moment-team>span{font-size:.7rem;font-weight:600;letter-spacing:.07em}
+.moment-team strong{font-size:1.6rem;line-height:1.15;font-weight:600;font-variant-numeric:tabular-nums}
+.moment-clock{padding:5px 13px;background:#eeecd9;color:#111810;display:flex;flex-direction:column;justify-content:center;min-width:81px;text-align:center}
+.moment-clock span{font-size:.47rem;letter-spacing:.16em;font-weight:600}
+.moment-clock strong{font-size:1.3rem;line-height:1.2;font-variant-numeric:tabular-nums}
+.moment-clock.urgent{background:var(--red);color:white}
+.moment-tools{position:absolute;right:20px;top:24px;display:flex;gap:7px}
+.moment button{font-family:'IBM Plex Mono',monospace;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.moment-tools button{background:#111810c9;border:1px solid #ffffff30;color:#dfe6d4;border-radius:3px;font-size:.56rem;letter-spacing:.07em;padding:8px 10px;min-height:34px}
+.moment button:hover:not(:disabled){filter:brightness(1.12)}
+.moment button:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+.moment button:disabled{cursor:default;opacity:.45}
+.moment-overlay{position:absolute;inset:95px 0 0;background:linear-gradient(90deg,#101610ed 0%,#101610ad 37%,transparent 74%);display:flex;align-items:center;padding:0 44px 35px;z-index:2}
+.moment-overlay[hidden]{display:none}
+.moment-overlay-copy{max-width:450px}
+.moment-overlay .moment-eyebrow{color:var(--lime);font-size:.61rem}
+.moment-overlay h3{font-size:clamp(2rem,4.7vw,3.55rem);line-height:1.03;letter-spacing:-.055em;font-weight:700;color:#fffef1;margin:17px 0}
+.moment-overlay-copy>p:not(.moment-eyebrow){font-size:.88rem;line-height:1.7;color:#bfc4b3}
+.moment-primary{margin-top:26px;border:0;border-radius:3px;padding:16px 21px;background:var(--lime);color:#18220f;font-weight:600;font-size:.72rem;letter-spacing:.03em;display:flex;align-items:center;gap:36px;min-height:48px}
+.moment-primary span{font-size:1.25rem;line-height:1}
+.moment-start-hint{display:block;margin-top:12px;font:400 .6rem 'IBM Plex Mono',monospace;color:#9da78e}
+.moment-edition{position:absolute;left:44px;bottom:17px;font:400 .47rem 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#8b957c}
+.moment-callout{pointer-events:none;position:absolute;left:50%;top:26%;transform:translateX(-50%) rotate(-3deg);color:var(--lime);font-size:clamp(1.4rem,4vw,3rem);font-style:italic;font-weight:800;letter-spacing:-.05em;text-shadow:3px 4px #12180e;white-space:nowrap;opacity:0;transition:opacity .12s}
+.moment-callout.visible{opacity:1}
+.moment-player-tag{position:absolute;bottom:20px;right:22px;display:flex;align-items:center;gap:12px;font:500 .62rem 'IBM Plex Mono',monospace;letter-spacing:.14em;background:#151b13d9;padding:7px 7px 7px 12px;border:1px solid #ffffff24;color:#f2efdc}
+.moment-player-tag b{background:#ecebdc;color:#bb2038;font-size:1rem;padding:0 9px;line-height:1.8}
+.moment-controls{display:grid;grid-template-columns:1fr 190px 215px;gap:27px;align-items:center;padding:21px 24px;background:#1e261a;border:1px solid #444b36;border-top-color:#536044;border-radius:0 0 7px 7px}
+.moment-possession>span{font:600 .57rem 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--lime)}
+.moment-possession>p{font-size:.75rem;line-height:1.5;color:#d6dccb;margin-top:4px;min-height:2.8em;display:flex;align-items:center}
+.moment-release>span{display:block;font:400 .49rem 'IBM Plex Mono',monospace;letter-spacing:.07em;color:#adb59e;margin-top:8px;text-align:center}
+.moment-meter{height:15px;background:#080e07;position:relative;border:1px solid #525e43;border-radius:2px}
+.moment-green{position:absolute;top:0;bottom:0;left:66%;width:18%;background:var(--lime);box-shadow:0 0 13px #d7f67530}
+#moment-needle{position:absolute;left:0;top:-4px;bottom:-4px;width:3px;transform:translateX(-50%);background:white;box-shadow:0 0 5px #000}
+.moment-shoot{touch-action:none;user-select:none;-webkit-user-select:none;background:var(--lime);color:#142008;font-weight:600;font-size:.66rem;border:0;border-radius:3px;min-height:49px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.moment-shoot span{font-size:.49rem;border:1px solid #15220760;padding:4px 6px;border-radius:3px}
+.moment-shoot.charging{background:white;transform:translateY(1px)}
+.moment-footer{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:22px 0 14px;border-bottom:1px solid #343e2b}
+.moment-sequence{list-style:none;display:flex;gap:25px;flex-wrap:wrap}
+.moment-sequence li{font:500 .5rem 'IBM Plex Mono',monospace;letter-spacing:.02em;color:#8a957b;display:flex;align-items:center;gap:7px}
+.moment-sequence li>span{font-size:.47rem;opacity:.6}
+.moment-sequence li b{border:1px solid #48513d;border-radius:3px;min-width:22px;text-align:center;padding:2px 4px;font-size:.5rem;color:#b4bda8}
+.moment-sequence li.current{color:#e5eed6}
+.moment-sequence li.done{color:var(--lime)}
+.moment-sequence li.done b{border-color:var(--lime);background:var(--lime);color:#142008}
+#moment-progress{font:500 .66rem 'IBM Plex Mono',monospace;color:var(--lime);white-space:nowrap}
+.moment-note{color:#8f9984;font-size:.63rem;line-height:1.8;max-width:100%;margin-top:13px}
+.moment-note a{color:#bec9ae;text-underline-offset:3px;white-space:nowrap}
+.moment-note kbd{font-family:'IBM Plex Mono',monospace;color:#bec9ae}
+#moment-exit{display:none}
+.moment.is-focused{position:fixed;inset:0;z-index:100;background:#111810;padding:18px 24px;display:flex;flex-direction:column;border:0;overflow:auto}
+.moment.is-focused .moment-heading{margin-bottom:14px;flex-shrink:0}
+.moment.is-focused .moment-heading h2{font-size:1.8rem}
+.moment.is-focused .moment-heading .moment-eyebrow{display:none}
+.moment.is-focused .moment-stage{flex:1;min-height:210px;aspect-ratio:auto}
+.moment.is-focused .moment-stage canvas{width:100%;height:100%;margin:0;object-fit:contain}
+.moment.is-focused .moment-controls{flex-shrink:0}
+.moment.is-focused .moment-footer{flex-shrink:0;padding:14px 0 0;border:0}
+.moment.is-focused .moment-note{display:none}
+.moment.is-focused #moment-exit{display:block}
+@media(max-width:860px){
+ .arena .a-intro{gap:25px;margin-bottom:30px}.arena .a-intro h1.hero{font-size:2rem}.arena .a-intro .hero-sub{font-size:.77rem}
+ .moment-controls{grid-template-columns:1fr 150px 170px;gap:15px;padding:15px}.moment-possession>p{font-size:.68rem}.moment-shoot{font-size:.58rem;padding:10px}
+ .moment-sequence{gap:12px}.moment-sequence li{font-size:.43rem;gap:5px}
+ .moment-overlay{padding:0 28px 20px}.moment-overlay h3{font-size:2.5rem}.moment-overlay-copy>p:not(.moment-eyebrow){font-size:.74rem}.moment-primary{margin-top:16px;padding:12px 16px;font-size:.63rem}.moment-edition{left:28px;font-size:.42rem}
+}
+@media(max-width:600px){
+ #tmac-game #moment-canvas{width:200%}
+ .moment.is-focused{padding:12px 10px}.moment.is-focused .moment-heading{margin-bottom:10px}.moment.is-focused .moment-heading h2{font-size:1.55rem}.moment.is-focused .moment-stage canvas{width:200%;margin-left:-50%;object-fit:fill}.moment.is-focused .moment-stage{min-height:260px}.moment.is-focused .moment-footer{padding-top:10px}.moment.is-focused .moment-sequence{gap:7px 12px}
+ .arena{padding:27px 0}.arena .wrap{padding:0 16px}.arena .a-intro{display:block;margin-bottom:30px}.arena .a-intro h1.hero{max-width:20ch;font-size:2.15rem;margin-bottom:17px}.arena .a-intro .hero-sub{font-size:.79rem;max-width:48ch}.arena .a-intro .dateline{font-size:.53rem;margin-bottom:18px}
+ .moment{padding-top:20px}.moment-heading{align-items:start;margin-bottom:17px}.moment h2{font-size:1.95rem}.moment-eyebrow{font-size:.46rem;letter-spacing:.08em;margin-bottom:9px}.moment-location{font-size:.41rem;padding-top:3px;line-height:1.7;max-width:90px}
+ .moment-stage{aspect-ratio:4/4.5}.moment-stage canvas{width:200%;max-width:none;margin-left:-50%;object-fit:fill}
+ .moment-scoreboard{top:12px;left:10px}.moment-team{gap:10px;padding:8px}.moment-team>span{font-size:.55rem}.moment-team strong{font-size:1.2rem}.moment-clock{padding:4px 9px;min-width:64px}.moment-clock strong{font-size:1.13rem}.moment-clock span{font-size:.42rem}
+ .moment-tools{right:10px;top:65px;gap:5px}.moment-tools button{font-size:.43rem;min-height:30px;padding:5px 8px}
+ .moment-overlay{inset:100px 0 0;padding:20px 22px 30px;align-items:center;background:linear-gradient(90deg,#101610f2,#101610bd 60%,#10161025)}.moment-overlay h3{font-size:2.6rem;margin:14px 0}.moment-overlay .moment-eyebrow{font-size:.51rem}.moment-overlay-copy>p:not(.moment-eyebrow){font-size:.77rem}.moment-primary{margin-top:21px;font-size:.65rem;min-height:47px}.moment-start-hint{font-size:.5rem}.moment-edition{left:22px;bottom:12px;font-size:.36rem}.moment-player-tag{bottom:12px;right:10px;font-size:.47rem;padding:4px 4px 4px 7px;gap:7px}.moment-player-tag b{font-size:.8rem}
+ .moment-controls{grid-template-columns:1fr 1fr;padding:14px 12px;gap:14px}.moment-possession{grid-column:1/-1;min-height:40px}.moment-possession>p{min-height:0;font-size:.72rem}.moment-possession>span{font-size:.52rem}.moment-release{max-width:none}.moment-shoot{min-height:50px;font-size:.58rem}.moment-shoot span{font-size:.42rem}.moment-release>span{font-size:.42rem}.moment-callout{top:31%;font-size:1.65rem}
+ .moment-footer{align-items:start;padding:17px 0 12px;gap:10px}.moment-sequence{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}.moment-sequence li{font-size:.43rem}.moment-sequence li>span{display:none}#moment-progress{font-size:.6rem;padding-top:3px}.moment-note{font-size:.59rem}
+}
+@media(prefers-reduced-motion:reduce){.moment *{transition:none!important;scroll-behavior:auto}}
+/* Keep the page quiet and the game legible. Canvas handles the camera at every size. */
+.moment h2{font-size:clamp(26px,3.4vw,42px)}
+.moment-stage{aspect-ratio:1100/550;min-height:420px}
+.moment-heading{margin-bottom:18px}.moment-heading .moment-eyebrow{font-size:10px}.moment-location{font-size:10px}
+.moment-team>span{font-size:12px}.moment-clock span{font-size:10px}
+.moment-tools button{font-size:11px;min-height:38px}.moment-tools{z-index:4}
+.moment-primary{font-size:12px}.moment-overlay-copy>p:not(.moment-eyebrow){font-size:15px}
+.moment-start-hint{font-size:11px}.moment-overlay .moment-eyebrow{font-size:11px}.moment-edition{display:none}
+.moment-possession>span{font-size:11px}.moment-possession>p{font-size:14px;min-height:2.8em}
+.moment-release>span{font-size:10px}.moment-shoot{font-size:12px}.moment-shoot span{font-size:10px}
+.moment-sequence{padding:0;margin:0}.moment-sequence li,.moment-sequence li b{font-size:10px}.moment-sequence li>span{font-size:9px}#moment-progress{font-size:12px}.moment-note{font-size:11px}
+.moment-player-tag{font-size:11px}.moment-callout{z-index:3}
+.moment-replay{display:block;background:transparent;color:var(--lime);border:1px solid #6e8057;padding:10px 16px;margin-top:10px;border-radius:3px;font-size:11px;min-height:40px}
+.moment-feedback{position:absolute;top:100px;left:24px;padding:6px 10px;color:var(--lime);background:#152111df;border:1px solid #819c57;border-radius:3px;font:600 11px 'IBM Plex Mono',monospace;opacity:0;transition:opacity .15s;pointer-events:none}.moment-feedback.visible{opacity:1}.moment-feedback.missed{color:#efb297;border-color:#98523c}
+.moment-broadcast{position:absolute;left:24px;bottom:20px;color:#eef1df;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;background:#11190dd9;padding:9px 11px;border-left:2px solid var(--lime)}.moment-broadcast span{color:#a3af97;margin-left:13px}
+.moment.is-clutch .moment-stage{border-color:#9a6341}.moment.is-clutch .moment-controls{border-color:#9a6341}
+.moment.is-replay .moment-broadcast{color:var(--lime)}
+@media(max-width:860px){.moment-controls{grid-template-columns:1fr 140px 190px;gap:18px}.moment-sequence{gap:16px}.moment-sequence li>span{display:none}.moment-sequence li{font-size:9px}.moment-shoot{font-size:11px}}
+@media(max-width:600px){
+ .site-opening,.game-home,.site-footer{padding-left:14px;padding-right:14px}.site-opening{padding-top:16px;padding-bottom:20px}.identity{font-size:12px}.opening-copy{display:block;margin:18px 0 14px}.opening-copy h1{font-size:27px}.opening-copy p{margin-top:12px;font-size:13px}.opening-copy p br{display:none}.work-links{gap:9px 16px;font-size:12px}.work-links>span{display:none}
+ .moment h2{font-size:26px}.moment-heading .moment-eyebrow{display:none}.moment-location{font-size:8px}.moment-heading{align-items:center;gap:8px}.moment-stage{aspect-ratio:4/4.5}
+ #tmac-game #moment-canvas,.moment.is-focused .moment-stage #moment-canvas{width:100%;margin:0;object-fit:fill}
+ .moment-tools{top:68px;right:10px}.moment-tools button{font-size:10px;min-height:34px}.moment-team>span{font-size:11px}.moment-clock span{font-size:9px}.moment-overlay{inset:109px 0 0;padding:14px 20px 35px}.moment-overlay h3{font-size:34px}.moment-overlay-copy>p:not(.moment-eyebrow){font-size:13px}.moment-overlay .moment-eyebrow{font-size:10px}.moment-start-hint{font-size:10px}.moment-primary{margin-top:17px;font-size:11px;padding:12px 15px}.moment-edition{font-size:7px;bottom:12px;left:20px}
+ .moment-controls{grid-template-columns:1fr 1fr;gap:15px;padding:13px 12px}.moment-possession>span{font-size:10px}.moment-possession>p{font-size:13px;min-height:0}.moment-possession{min-height:48px}.moment-shoot{font-size:11px}.moment-shoot span{display:none}.moment-release>span{font-size:9px}.moment-sequence{gap:8px 16px}.moment-sequence li,.moment-sequence li b{font-size:9px}#moment-progress{font-size:11px}.moment-note{font-size:10px}
+ .moment-player-tag{font-size:10px}.moment-broadcast{left:12px;bottom:14px;font-size:9px;padding:6px 8px}.moment-broadcast span{display:none}.moment-feedback{left:12px;top:109px;font-size:10px}
+ .moment.is-focused .moment-heading h2{font-size:23px}.moment.is-focused .moment-stage{min-height:290px}.moment.is-focused .moment-sequence{gap:7px 12px}.moment-replay{font-size:10px;min-height:36px;padding:8px 12px}.site-footer{font-size:10px;gap:14px;padding-top:20px}
+}

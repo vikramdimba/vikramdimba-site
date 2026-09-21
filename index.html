@@ -2,319 +2,61 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vikram Dimba, operations systems for Shopify retailers with a physical store</title>
-<meta name="description" content="I build the system that runs the gap between your Shopify store and your physical store, the inventory, orders, and customer data that have to stay true in both at once.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111510">
+<title>Vikram Dimba · TMACFORMVP · 13 in 33</title>
+<meta name="description" content="I write about basketball and build things. Play the moment behind TMACFORMVP: 13 points in 33 seconds.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --ink:#16181d;
-    --ink-soft:#4a4f5a;
-    --paper:#f7f5f0;
-    --paper-2:#efece4;
-    --line:#e0dccf;
-    --accent:#1f6f6b;
-    --accent-deep:#16504d;
-    --card:#ffffff;
-    --radius:14px;
-    --maxw:1080px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{
-    font-family:'Inter',system-ui,sans-serif;
-    color:var(--ink);
-    background:var(--paper);
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
-  .serif{font-family:'Newsreader',Georgia,serif;font-weight:400}
-
-  /* NAV */
-  nav{
-    position:sticky;top:0;z-index:50;
-    background:rgba(247,245,240,.82);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid var(--line);
-  }
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:68px}
-  .brand{font-weight:600;letter-spacing:-.01em;font-size:1.05rem}
-  .brand span{color:var(--accent)}
-  .btn{
-    display:inline-block;background:var(--accent);color:#fff;
-    padding:11px 20px;border-radius:999px;text-decoration:none;
-    font-weight:500;font-size:.92rem;transition:background .2s,transform .2s;
-    white-space:nowrap;
-  }
-  .btn:hover{background:var(--accent-deep);transform:translateY(-1px)}
-  .nav-btn{padding:9px 18px;font-size:.88rem}
-
-  /* HERO */
-  header{padding:96px 0 76px;border-bottom:1px solid var(--line)}
-  .eyebrow{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:22px}
-  h1.hero{
-    font-family:'Newsreader',Georgia,serif;font-weight:500;
-    font-size:clamp(2.5rem,6vw,4.3rem);line-height:1.04;letter-spacing:-.02em;
-    max-width:16ch;margin-bottom:26px;
-  }
-  .hero-sub{font-size:1.18rem;color:var(--ink-soft);max-width:54ch;margin-bottom:36px}
-  .hero-cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-  .ghost{
-    color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem;
-    border-bottom:1.5px solid var(--ink);padding-bottom:2px;
-  }
-  .ghost:hover{color:var(--accent);border-color:var(--accent)}
-
-  /* SECTION */
-  section{padding:78px 0;border-bottom:1px solid var(--line)}
-  .sec-label{font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:18px}
-  h2{font-family:'Newsreader',Georgia,serif;font-weight:500;font-size:clamp(1.8rem,3.6vw,2.6rem);line-height:1.12;letter-spacing:-.015em;margin-bottom:22px;max-width:20ch}
-  .lead{font-size:1.12rem;color:var(--ink-soft);max-width:62ch}
-  .lead + .lead{margin-top:18px}
-  .lead strong{color:var(--ink);font-weight:600}
-
-  /* STATS */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:44px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 26px}
-  .stat .num{font-family:'Newsreader',serif;font-size:2.5rem;font-weight:500;color:var(--accent-deep);letter-spacing:-.02em;line-height:1}
-  .stat .desc{margin-top:12px;font-size:.96rem;color:var(--ink-soft)}
-  .case-tag{display:inline-block;background:var(--paper-2);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.82rem;color:var(--ink-soft);margin-bottom:24px}
-
-  /* STEPS */
-  .steps{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:44px}
-  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px 28px;position:relative}
-  .step .n{font-family:'Newsreader',serif;font-size:1.05rem;color:var(--accent);font-weight:500;margin-bottom:10px}
-  .step h3{font-size:1.18rem;font-weight:600;letter-spacing:-.01em;margin-bottom:6px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .step .price{font-size:.82rem;font-weight:500;color:#fff;background:var(--accent);padding:3px 10px;border-radius:999px;white-space:nowrap}
-  .step .price.free{background:var(--ink)}
-  .step p{font-size:.98rem;color:var(--ink-soft)}
-
-  /* FIT */
-  .fit-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:start}
-  ul.ticks{list-style:none;margin-top:8px}
-  ul.ticks li{position:relative;padding-left:30px;margin-bottom:14px;color:var(--ink-soft);font-size:1.02rem}
-  ul.ticks li::before{content:"";position:absolute;left:0;top:9px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
-  .tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-  .tag{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:.9rem;color:var(--ink)}
-
-  /* CTA BAND */
-  .cta-band{background:var(--ink);color:var(--paper);border:none}
-  .cta-band h2{color:var(--paper);max-width:24ch}
-  .cta-band .q{font-family:'Newsreader',serif;font-style:italic;font-size:clamp(1.4rem,3vw,2rem);line-height:1.3;color:var(--paper);max-width:30ch;margin-bottom:30px}
-  .cta-band .muted{color:#a7adba;font-size:1.05rem;max-width:54ch;margin-bottom:30px}
-  .btn-light{background:var(--paper);color:var(--ink)}
-  .btn-light:hover{background:#fff}
-
-  /* FOOTER */
-  footer{padding:60px 0;background:var(--paper)}
-  .foot-bio{font-size:1.0rem;color:var(--ink-soft);max-width:70ch;margin-bottom:28px}
-  .foot-bio strong{color:var(--ink);font-weight:600}
-  .foot-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-top:26px;border-top:1px solid var(--line)}
-  .foot-row .name{font-weight:600}
-  .foot-row a{color:var(--accent);text-decoration:none}
-  .foot-row a:hover{text-decoration:underline}
-
-  /* BACKGROUND */
-  .creds{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
-  .cred{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px}
-  .cred .role{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:10px}
-  .cred h3{font-size:1.08rem;font-weight:600;letter-spacing:-.01em;margin-bottom:6px}
-  .cred p{font-size:.94rem;color:var(--ink-soft)}
-
-  /* FORM */
-  .form-card{background:var(--card);border-radius:16px;padding:34px 32px;max-width:600px;margin:34px auto 0;text-align:left;box-shadow:0 24px 60px rgba(0,0,0,.28)}
-  .form-card .fld{margin-bottom:18px}
-  .form-card label{display:block;font-size:.9rem;font-weight:600;color:var(--ink);margin-bottom:7px}
-  .form-card input,.form-card select,.form-card textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-family:inherit;font-size:.98rem;color:var(--ink);background:#fff}
-  .form-card textarea{min-height:88px;resize:vertical}
-  .form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(31,111,107,.13)}
-  .form-card .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .form-card button{width:100%;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:14px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:4px;transition:background .2s}
-  .form-card button:hover{background:var(--accent-deep)}
-  .form-card button:disabled{opacity:.6;cursor:default}
-  #formResult{display:none;margin-top:22px;color:var(--paper);font-size:1.1rem;line-height:1.5}
-  #formResult strong{color:#fff}
-
-  @media(max-width:760px){
-    .creds{grid-template-columns:1fr}
-    .form-card .row{grid-template-columns:1fr}
-    .form-card{padding:26px 22px}
-    .stats{grid-template-columns:1fr}
-    .steps{grid-template-columns:1fr}
-    .fit-grid{grid-template-columns:1fr;gap:30px}
-    .nav-btn{display:none}
-    header{padding:64px 0 54px}
-    section{padding:56px 0}
-  }
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;1,6..72,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tmac-game.css">
 </head>
 <body>
-
-<nav>
-  <div class="wrap">
-    <div class="brand">Vikram <span>Dimba</span></div>
-    <a href="#contact" class="btn nav-btn">Book a free operations review</a>
-  </div>
-</nav>
-
-<header>
-  <div class="wrap">
-    <div class="eyebrow">Operations systems for Shopify retailers who also run a physical store.</div>
-    <h1 class="hero">You run a Shopify store and a real store. The software assumes you only do one.</h1>
-    <p class="hero-sub">I build the connective tissue between your website and your floor: the inventory, orders, and customer data that have to stay true in both places at once. Then I hand it to your team to run.</p>
-    <div class="hero-cta">
-      <a href="#contact" class="btn">Book a free operations review</a>
-      <a href="#work" class="ghost">See how it works</a>
-    </div>
-  </div>
+<header class="site-opening" id="top">
+  <div class="identity"><a href="#top">Vikram Dimba</a><a href="mailto:vikramdimba@gmail.com">Say hello ↗</a></div>
+  <div class="opening-copy"><h1>Welcome back to the internet,<br><em>TMACFORMVP.</em></h1><p>I write about basketball and build things.<br>It all started with a night like this.</p></div>
+  <nav class="work-links" aria-label="My work"><span>Elsewhere</span><a href="https://hoopdfantasy.com" target="_blank" rel="noopener">Hoop’d Fantasy ↗</a><a href="https://theassist.nyc" target="_blank" rel="noopener">TheAssist ↗</a><a href="https://nba-librarian.beehiiv.com/" target="_blank" rel="noopener">The NBA Librarian ↗</a><a href="https://medium.com/@vikramdimba" target="_blank" rel="noopener">Writing ↗</a><a href="https://clubtheory.substack.com" target="_blank" rel="noopener">Club Theory ↗</a></nav>
 </header>
-
-<section>
-  <div class="wrap">
-    <div class="sec-label">The problem</div>
-    <h2>Every tool you use was built for half your business.</h2>
-    <p class="lead">Your Shopify apps assume you're online-first. Your POS and retail tools assume you're floor-first. Nobody built for the handoff between them, so your team runs the handoff by hand.</p>
-    <p class="lead">Inventory that has to be right on the site and in the store at the same time. Purchase orders that feed both channels. Customer history split between the register and the website. A weekly number that only exists because someone stitched the two worlds together in a spreadsheet. That stitching is invisible, manual, and it's exactly where your time, money, and risk leak. It holds together because a person holds it together, not because a system does.</p>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="sec-label">Recent engagement</div>
-    <span class="case-tag">35-year-old, multi-location boutique</span>
-    <h2>One source of truth across the buying, the website, and the floor.</h2>
-    <p class="lead">A 35-year-old, multi-location boutique. Wholesale orders arrived as PDFs and spreadsheets, got re-keyed by hand, and the website, the stores, and the back office never quite agreed on what was true. I rebuilt the chain from vendor order intake through inventory to daily reporting so both channels finally run off one system, then handed it to the team.</p>
-    <div class="stats">
-      <div class="stat">
-        <div class="num">~$70k</div>
-        <div class="desc">per year in labor offset (a person-dependent workflow automated enough that the role didn't need backfilling when the person left).</div>
+<main class="game-home">
+    <div id="tmac-game" class="moment" role="region" aria-label="13 in 33 basketball challenge">
+      <div class="moment-heading">
+        <div><p class="moment-eyebrow">One night. An entire reason to believe.</p><h2>13 points. <em>33 seconds.</em></h2></div>
+        <p class="moment-location">HOUSTON, TEXAS<br>DECEMBER 09, 2004</p>
       </div>
-      <div class="stat">
-        <div class="num">~$11.5k</div>
-        <div class="desc">per year in software cut (an underused tool at ~$950/month, identified and replaced).</div>
+      <div class="moment-stage" tabindex="0" aria-label="Basketball game. Hold Space or the Shoot button, then release in the green. P pauses." aria-describedby="moment-instructions">
+        <canvas id="moment-canvas" width="1100" height="620" aria-label="Animated Houston versus San Antonio basketball court"></canvas>
+        <div class="moment-scoreboard" aria-label="Scoreboard">
+          <div class="moment-team away"><span>SA</span><strong id="moment-away">76</strong></div>
+          <div class="moment-team home"><span>HOU</span><strong id="moment-home">68</strong></div>
+          <div class="moment-clock"><span id="moment-period">4TH</span><strong id="moment-time">33.0</strong></div>
+        </div>
+        <div class="moment-tools"><button id="moment-exit" type="button" aria-label="Exit expanded game">EXIT ↙</button><button id="moment-audio" type="button" aria-pressed="false" aria-label="Enable game sound">SOUND OFF</button><button id="moment-pause" type="button" disabled aria-label="Pause game">Ⅱ</button></div>
+        <div class="moment-overlay" id="moment-overlay">
+          <div class="moment-overlay-copy">
+            <p class="moment-eyebrow" id="moment-overlay-kicker">YOU ARE TRACY MCGRADY.</p>
+            <h3 id="moment-overlay-title">They’re heading<br>for the exits.</h3>
+            <p id="moment-overlay-body">Down eight. Four threes. One free throw.<br>Give them a reason to turn around.</p>
+            <button id="moment-start" class="moment-primary" type="button">MAKE THEM BELIEVE <span aria-hidden="true">↗</span></button>
+            <button class="moment-replay" id="moment-replay" type="button" hidden>WATCH THE WINNER ↺</button>
+            <span class="moment-start-hint" id="moment-start-hint">Hold to shoot. Release in the green.</span>
+          </div>
+          <span class="moment-edition">THE TMACFORMVP ORIGIN STORY / VOL. 01</span>
+        </div>
+        <div class="moment-callout" id="moment-callout" aria-hidden="true"></div>
+        <div class="moment-feedback" id="moment-feedback" aria-hidden="true"></div>
+        <div class="moment-broadcast" id="moment-broadcast">4TH QUARTER <span>HOUSTON</span></div>
+        <div class="moment-player-tag" id="moment-player-tag">McGRADY <b>1</b></div>
       </div>
-      <div class="stat">
-        <div class="num">&lt;90 days</div>
-        <div class="desc">from founder memory and manual workarounds to systems the team runs themselves.</div>
+      <div class="moment-controls">
+        <div class="moment-possession"><span id="moment-play-label">THE FIRST THREE</span><p id="moment-status" role="status" aria-live="polite">An eight-point deficit. An impossible assignment.</p></div>
+        <div class="moment-release"><div class="moment-meter" id="moment-meter" role="meter" aria-label="Shot release timing" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="moment-green"></span><i id="moment-needle"></i></div><span id="moment-meter-label">RELEASE IN THE GREEN</span></div>
+        <button class="moment-shoot" id="moment-shoot" type="button" disabled>HOLD TO SHOOT <span>SPACE</span></button>
       </div>
+      <div class="moment-footer"><ol class="moment-sequence" aria-label="Scoring sequence"><li data-step="0"><span>01</span> THE SPARK <b>3</b></li><li data-step="1"><span>02</span> AND ONE <b>3+1</b></li><li data-step="3"><span>03</span> STILL ALIVE <b>3</b></li><li data-step="4"><span>04</span> THE DAGGER <b>3</b></li></ol><p id="moment-progress">0 / 13 PTS</p></div>
+      <p class="moment-note" id="moment-instructions">A playable tribute. Hold <kbd>Space</kbd> or the shot button; release in green. <kbd>P</kbd> to pause. A 33-second arcade clock, with a stop for the free throw. <a href="https://www.nba.com/watch/video/tdih-tracy-mcgrady-scores-13-points-in-33-seconds-v-sas-in-2004" target="_blank" rel="noopener">Watch the real moment ↗</a></p>
     </div>
-  </div>
-</section>
-
-<section id="work">
-  <div class="wrap">
-    <div class="sec-label">How I work</div>
-    <h2>I build the system, then hand it to your team.</h2>
-    <p class="lead">I embed as intensive headcount for a focused window (typically one to three months) to build the connection between your website and your floor. Then I step back to light-touch support. You're not buying permanent headcount, you're buying a system your own people run.</p>
-    <div class="steps">
-      <div class="step">
-        <div class="n">Step 01</div>
-        <h3>A free operations review <span class="price free">Free · 30 min</span></h3>
-        <p>We take one workflow that crosses your website and your floor and find exactly where it leaks.</p>
-      </div>
-      <div class="step">
-        <div class="n">Step 02</div>
-        <h3>The Map <span class="price">From $5k</span></h3>
-        <p>Two to three weeks mapping how the business really runs across both channels. You get a prioritized roadmap and you own it whether or not we continue.</p>
-      </div>
-      <div class="step">
-        <div class="n">Step 03</div>
-        <h3>The Build <span class="price">Fixed price</span></h3>
-        <p>We build the highest-leverage connection first. I work as embedded headcount for this stretch, then hand it off. A real system your team uses, not a deck.</p>
-      </div>
-      <div class="step">
-        <div class="n">Step 04</div>
-        <h3>Systems Stewardship <span class="price">Light retainer</span></h3>
-        <p>Your team runs it day to day; I maintain and improve it as the business changes.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="sec-label">Who this is for</div>
-    <div class="fit-grid">
-      <div>
-        <h2>Built for one specific kind of business.</h2>
-        <ul class="ticks">
-          <li>You sell online through Shopify.</li>
-          <li>You also have at least one physical store or warehouse, not just a website.</li>
-          <li>You have a team, so the work crosses several people.</li>
-          <li>Inventory, orders, or customer data have to stay true in more than one place, and right now a human keeps them in sync.</li>
-          <li>One or two of those people are the glue, and it would genuinely hurt if they were out for a week.</li>
-        </ul>
-      </div>
-      <div style="align-self:center">
-        <p class="serif" style="font-size:clamp(1.45rem,2.6vw,1.95rem);font-style:italic;line-height:1.3;color:var(--accent-deep);max-width:18ch">If three of those five are true, we should talk.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="background">
-  <div class="wrap">
-    <div class="sec-label">Background</div>
-    <h2>I don't just advise on systems. I build them.</h2>
-    <p class="lead">For 10+ years I built systems where two sources of data have to agree or everything breaks: payments, billing, reconciliation. That's the same discipline a business living in two worlds needs. Map what's really happening across both, then build something the team can rely on.</p>
-    <div class="creds">
-      <div class="cred">
-        <div class="role">Enterprise product</div>
-        <h3>Payments, billing &amp; reconciliation</h3>
-        <p>Led core transaction and reconciliation platforms at SquareTrade (an Allstate company) and cloud products at Verizon, systems where every record has to reconcile.</p>
-      </div>
-      <div class="cred">
-        <div class="role">AI automation</div>
-        <h3>81% of a manual process, automated</h3>
-        <p>At National MI, built an AI-driven system to extract data from scanned payment documents with confidence scoring, automating 81% of a manual process.</p>
-      </div>
-      <div class="cred">
-        <div class="role">Founder &amp; builder</div>
-        <h3>Built TheAssist end-to-end</h3>
-        <p>Designed and shipped a full platform from scratch (Next.js, Supabase, Stripe). I build the systems myself, you're not paying me to hand you a deck.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="cta-band" id="contact">
-  <div class="wrap">
-    <div class="sec-label" style="color:#7fd4cf">Where we'd start</div>
-    <p class="q">Where does your website stop knowing what your store knows?</p>
-    <p class="muted">That gap is usually where the manual work lives. The first step is just a 30-minute review, free, no pitch.</p>
-
-    <iframe id="opsDiagnostic" src="/operations-review-diagnostic.html" title="Operations Review, live diagnostic" scrolling="no" loading="lazy" style="width:100%;max-width:680px;height:760px;display:block;margin:34px auto 0;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:#16181d;box-shadow:0 18px 50px rgba(0,0,0,.22)"></iframe>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <p class="foot-bio">I'm not a tools vendor, and I don't sell generic AI. I build the operating system your business runs on, then hand it to your team.</p>
-    <div class="foot-row">
-      <span class="name">Vikram Dimba</span>
-      <span><a href="mailto:vikramdimba@gmail.com">vikramdimba@gmail.com</a> · <a href="https://vikramdimba.com">vikramdimba.com</a></span>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // Auto-size the embedded diagnostic and keep each step in view.
-  (function(){
-    var f = document.getElementById('opsDiagnostic');
-    if(!f) return;
-    window.addEventListener('message', function(e){
-      var d = e.data || {};
-      if(d.type === 'ops-diagnostic-height' && typeof d.height === 'number'){
-        f.style.height = (d.height + 2) + 'px';
-      } else if(d.type === 'ops-diagnostic-step'){
-        f.scrollIntoView({behavior:'smooth', block:'start'});
-      }
-    });
-  })();
-</script>
-
+</main>
+<footer class="site-footer"><span>Twenty years of the same game.</span><span>Vikram Dimba · New York City</span></footer>
+<script src="tmac-game.js" defer></script>
 </body>
 </html>
