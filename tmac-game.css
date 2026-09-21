@@ -166,3 +166,26 @@
 .moment-film-screen{min-height:240px}
 .moment-film-intro:has(button:not([hidden])){gap:10px}
 .moment-film-intro:has(button:not([hidden])) strong{font-size:30px}
+
+/* The cabinet is scenery; the bright button and control deck are the game. */
+.moment-tv{position:relative;padding:0 22px;background:linear-gradient(115deg,#454740,#32362f 38%,#242921);border:1px solid #62675a;border-radius:30px;box-shadow:inset 0 2px 1px #89917b55,inset 0 -5px 0 #151a14,0 22px 60px #0005}
+.moment-tv-top{min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 8px;color:#e5e6d6;font:600 11px/1.3 'IBM Plex Mono',monospace;letter-spacing:1.6px}
+.moment-tv-brand{font-style:italic;letter-spacing:2px}.moment-tv-brand small{margin-left:12px;font-size:8px;font-style:normal;letter-spacing:1px;color:#a7ad9a}
+.moment-tv-mode{display:flex;gap:8px;align-items:center;font-size:9px;letter-spacing:1px;color:#d7f675}.moment-tv-mode b{font-weight:400;color:#b7bea9}.moment-tv-mode i{width:6px;height:6px;border-radius:50%;background:#d7f675;box-shadow:0 0 8px #d7f67560}
+.moment-tv .moment-stage{border:4px solid #141a13;border-radius:24px 24px 10px 10px;box-shadow:0 -2px 0 #171c14,0 2px 0 #77806866;overflow:hidden}
+.moment-tv .moment-stage:after{content:'';position:absolute;inset:0;border-radius:20px 20px 6px 6px;box-shadow:inset 0 0 16px #0008,inset 0 1px 2px #e6f0d448;pointer-events:none;z-index:12}
+.moment-tv .moment-controls{margin-top:12px;border:1px solid #11180f;border-radius:8px;background:#1b2318;box-shadow:inset 0 1px 4px #0005;padding:15px 18px}
+.moment-tv-bottom{height:48px;display:flex;align-items:center;gap:28px;padding:0 8px;color:#abb39d;font:500 9px 'IBM Plex Mono',monospace;letter-spacing:1px}
+.moment-tv-channel{white-space:nowrap}.moment-tv-channel small{font-size:8px;margin-left:14px;color:#808b76}
+.moment-tv-speaker{height:17px;flex:1;max-width:280px;margin-left:auto;border-radius:3px;background:repeating-linear-gradient(0deg,#11170f 0 2px,#46503c 2px 4px);opacity:.8}
+.moment-tv-dials{display:flex;gap:12px}.moment-tv-dials i{position:relative;width:23px;height:23px;border:2px solid #151b13;border-radius:50%;background:linear-gradient(120deg,#68715c,#2b3425);box-shadow:1px 2px 2px #1119,inset 1px 1px 1px #8e997e}.moment-tv-dials i:after{content:'';position:absolute;top:3px;left:9px;height:7px;width:2px;background:#c8ceb7;transform:rotate(25deg);transform-origin:center 7px}
+.moment.is-focused .moment-tv{display:flex;flex-direction:column;flex:1;min-height:0;padding:0 16px;border-radius:22px}
+.moment.is-focused .moment-tv-top{min-height:34px;flex-shrink:0}
+.moment.is-focused .moment-tv-bottom{height:30px;flex-shrink:0}.moment.is-focused .moment-tv-speaker{height:12px}.moment.is-focused .moment-tv-dials i{width:18px;height:18px}.moment.is-focused .moment-tv-dials i:after{left:6px;top:2px;height:5px}
+.moment.is-focused .moment-tv .moment-controls{margin-top:8px;padding:10px 14px}
+@media(max-width:600px){
+ .moment-tv{padding:0 9px;border-radius:20px}.moment-tv-top{min-height:44px;padding:0 3px;gap:6px}.moment-tv-brand{font-size:9px;letter-spacing:1px}.moment-tv-brand small,.moment-tv-mode b{display:none}.moment-tv-mode{font-size:8px;letter-spacing:.3px;gap:5px}
+ .moment-tv .moment-stage{border-width:3px;border-radius:17px 17px 8px 8px}.moment-tv .moment-stage:after{border-radius:14px 14px 5px 5px}
+ .moment-tv .moment-controls{padding:12px 10px;margin-top:9px}.moment-tv-bottom{height:38px;padding:0 4px;gap:15px}.moment-tv-channel{font-size:8px}.moment-tv-channel small{display:none}.moment-tv-speaker{max-width:115px;height:13px}.moment-tv-dials{gap:8px}.moment-tv-dials i{width:19px;height:19px}.moment-tv-dials i:after{left:7px;top:2px;height:6px}
+ .moment.is-focused{padding:8px 6px}.moment.is-focused .moment-tv{padding:0 6px;border-radius:16px}.moment.is-focused .moment-tv-top{min-height:30px}.moment.is-focused .moment-tv-bottom{height:25px}.moment.is-focused .moment-tv .moment-controls{padding:9px;gap:7px}
+}

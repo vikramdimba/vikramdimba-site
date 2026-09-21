@@ -37,6 +37,24 @@
     rocketsMark.onload = () => render(state.elapsed);
     rocketsMark.src = 'assets/rockets-2003.svg';
   }
+  // Original NBA portraits, cropped to faces at draw time. Keep the illustrated
+  // head when a portrait is unavailable or has not loaded yet.
+  const portraits = {};
+  const portraitRoster = {
+    'HOU-1': ['mcgrady', [340, 25, 348, 490]],
+    'HOU-11': ['yao', [332, 10, 373, 500]],
+    'HOU-3': ['sura', [330, 12, 374, 493]],
+    'SA-21': ['duncan', [358, 32, 320, 480]],
+    'SA-12': ['bowen', [359, 26, 319, 488]],
+    'SA-9': ['parker', [347, 29, 339, 479]],
+    'SA-17': ['barry', [342, 2, 378, 542]]
+  };
+  if (typeof Image !== 'undefined') for (const [key, [name, crop]] of Object.entries(portraitRoster)) {
+    const image = new Image();
+    portraits[key] = { image, crop };
+    image.onload = () => render(state.elapsed);
+    image.src = `assets/players/${name}.png`;
+  }
 
   function announce(text) { $('status').textContent = text; }
   function callout(text, duration = 1.5) {
@@ -512,11 +530,27 @@
     text(p.main ? 'McGRADY' : p.home ? 'ROCKETS' : 'SPURS', 0, -51, p.main ? 3.7 : 4.1, trim, 'center', 800);
     text(String(p.number), 0, -39, 12, trim, 'center', 700);
     ctx.fillStyle = skin; ctx.fillRect(-3, -68, 6, 7);
-    ellipse(0, -72, 6.4, 8, skin, edge, .7);
-    path([{ x: -6, y: -73 }, { x: -5, y: -79 }, { x: 0, y: -81 }, { x: 5, y: -78 }, { x: 6, y: -74 }, { x: 0, y: -77 }], '#211e18');
-    if (!p.main) { line({ x: -3, y: -71 }, { x: -1.5, y: -71 }, '#2c251e', .7); line({ x: 2, y: -71 }, { x: 3.5, y: -71 }, '#2c251e', .7); }
+    const portrait = portraits[`${p.home ? 'HOU' : 'SA'}-${p.number}`];
+    if (portrait?.image.complete && portrait.image.naturalWidth > 0) {
+      const h = p.main ? 40 : 33, w = h * portrait.crop[2] / portrait.crop[3];
+      ctx.save();
+      // A rounded chin clips the neck without bringing the source jersey onto
+      // the game uniform. The transparent hair/ears retain their silhouette.
+      ctx.beginPath();
+      ctx.moveTo(-w / 2, -65 - h); ctx.lineTo(w / 2, -65 - h);
+      ctx.lineTo(w / 2, -74); ctx.quadraticCurveTo(0, -56, -w / 2, -74);
+      ctx.closePath(); ctx.clip();
+      ctx.drawImage(portrait.image, ...portrait.crop, -w / 2, -65 - h, w, h);
+      ctx.restore();
+    } else {
+      ctx.save(); ctx.translate(0, -65); ctx.scale(1.35, 1.35); ctx.translate(0, 65);
+      ellipse(0, -72, 6.4, 8, skin, edge, .7);
+      path([{ x: -6, y: -73 }, { x: -5, y: -79 }, { x: 0, y: -81 }, { x: 5, y: -78 }, { x: 6, y: -74 }, { x: 0, y: -77 }], '#211e18');
+      line({ x: -3, y: -71 }, { x: -1.5, y: -71 }, '#2c251e', .7); line({ x: 2, y: -71 }, { x: 3.5, y: -71 }, '#2c251e', .7);
+      ctx.restore();
+    }
     if (p.main && !state.shot && state.phase !== 'steal' && !celebrating) {
-      if (shooting) basketball(2, -85, 5.4, t);
+      if (shooting) basketball(17, -86, 5.4, t);
       else {
         const bounce = reduced.matches ? .55 : Math.abs(Math.sin(t * 7));
         basketball(21, -7 - bounce * 30, 5.5, t * 2);
@@ -542,6 +576,7 @@
       { x: ft ? 163 : 34, y: ft ? 297 : 325 + drift, number: state.step === 4 ? 12 : 17, home: false, skin: '#b89976' }
     ];
     if (state.phase === 'steal') {
+      defenders[3].number = defenders[0].number;
       defenders[0].x = -12 + Math.sin(t * 4) * 6; defenders[0].y = 408; defenders[0].number = 23;
       defenders[0].contest = false; defenders[0].ball = !state.stealCue;
       if (state.stealCue) {
@@ -553,7 +588,7 @@
       { x: ft ? -89 : 84, y: ft ? 120 : 116, home: true, number: 11, tall: 1.23, skin: '#c09a76' },
       { x: ft ? 89 : -196, y: ft ? 121 : 119 + drift, home: true, number: 35, skin: '#b89374' },
       { x: ft ? -165 : 216, y: ft ? 315 : 277 - drift, home: true, number: 3, skin: '#af8563' },
-      { x: ft ? 174 : -90, y: ft ? 331 : 362 + drift, home: true, number: 20, skin: '#6d4935' }
+      { x: ft ? 174 : -90, y: ft ? 331 : 362 + drift, home: true, number: 40, skin: '#bb9474' }
     ];
     [...defenders, ...teammates, { ...p, main: true, number: 1, home: true, skin: '#825739', tall: 1.05 }]
       .sort((a, b) => a.y - b.y).forEach(p => player(p, t));
