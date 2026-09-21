@@ -20,7 +20,7 @@
     mode: 'intro', phase: 'ready', step: 0, home: 68, away: 76, remaining: 33,
     elapsed: 0, charge: null, shot: null, phaseTime: 0, phaseDuration: 0,
     next: null, player: { x: 110, y: 310 }, from: null, target: null,
-    made: new Set(), attempts: 0, perfect: 0, call: '', callUntil: 0, cheer: 0,
+    made: new Set(), attempts: 0, perfect: 0, call: '', callUntil: 0, cheer: 0, result: null,
     sound: false, audio: null, previous: 0, inView: true, lastBounce: 0,
     cameraX: 550, cameraZoom: 1, width: 1100, height: 620, feedbackUntil: 0,
     lastShot: null, celebrationTime: 0, replayTime: 0, best: null, lastTick: 33,
@@ -191,7 +191,7 @@
       fakeReady: false, fakeUntil: 0, stealCue: false, inputHeld: false, runStarted: false, filmShown: false });
     $('overlay').hidden = true; $('callout').classList.remove('visible');
     $('replay').hidden = true; $('feedback').classList.remove('visible');
-    $('original').hidden = true;
+    $('original').hidden = true; $('share').hidden = true;
     $('broadcast').innerHTML = '4TH QUARTER <span>HOUSTON</span>';
     $('pause').disabled = false; $('pause').textContent = 'Ⅱ'; $('pause').setAttribute('aria-label', 'Pause game');
     setAction(true); $('play-label').textContent = plays[0].title; announce(plays[0].prompt);
@@ -206,6 +206,8 @@
     $('overlay').hidden = false;
     $('replay').hidden = state.mode !== 'won';
     $('original').hidden = state.mode !== 'won';
+    $('share').hidden = !['won', 'lost'].includes(state.mode);
+    $('share').textContent = 'SHARE YOUR RESULT ↗';
     $('start').focus({ preventScroll: true });
   }
   function pause() {
@@ -228,6 +230,7 @@
     root.classList.remove('is-replay');
     $('callout').classList.remove('visible'); $('feedback').classList.remove('visible');
     const used = (33 - state.remaining).toFixed(1);
+    state.result = { won, used, points: state.home - 68, shots: state.attempts };
     if (won) {
       state.cheer = 4;
       if (state.best === null || Number(used) < state.best) state.best = Number(used);
@@ -240,6 +243,31 @@
       showOverlay('THE CLOCK DOESN’T NEGOTIATE.', 'Almost a miracle.', `${state.home - 68} of 13 points. ${state.step === 1 ? 'Tap to get Duncan off his feet, then hold and release in green.' : state.phase === 'steal' ? 'T-Mac takes care of the steal. Hold to shoot once you have the ball.' : state.step >= 3 ? 'The last two threes need a quicker release. Read the green and beat the closeout.' : 'Hold until the needle reaches green, then let go.'}`, 'ONE MORE CHANCE ↗');
     }
     updateHUD();
+  }
+  function shareText() {
+    const r = state.result;
+    return r.won
+      ? `I scored 13 points in ${r.used} seconds as T-Mac. Houston 81, San Antonio 80. Can you beat it?`
+      : `I got ${r.points} of 13 points in 33 seconds as T-Mac. Can you finish the comeback?`;
+  }
+  async function copy(value) {
+    try { await navigator.clipboard.writeText(value); return true; } catch {}
+    const area = document.createElement('textarea');
+    area.value = value; area.setAttribute('readonly', ''); area.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(area); area.select();
+    const ok = document.execCommand('copy'); area.remove(); return ok;
+  }
+  async function share() {
+    if (!state.result) return;
+    const text = shareText(), url = 'https://vikramdimba.com';
+    const label = done => { $('share').textContent = done; };
+    try {
+      if (navigator.share) { await navigator.share({ title: '13 in 33', text, url }); return; }
+      if (!(await copy(`${text} ${url}`))) throw new Error('copy failed');
+      label('COPIED. PASTE IT ANYWHERE ✓');
+    } catch (e) {
+      if (e?.name !== 'AbortError') label('COULDN’T SHARE. TRY AGAIN ↗');
+    }
   }
   function celebrate() {
     state.mode = 'celebrating'; state.celebrationTime = 0; state.cheer = 4;
@@ -698,6 +726,7 @@
   $('start').addEventListener('click', startGame);
   $('replay').addEventListener('click', replay);
   $('original').addEventListener('click', originalFilm);
+  $('share').addEventListener('click', share);
   $('audio').addEventListener('click', toggleSound);
   $('pause').addEventListener('click', () => state.mode === 'paused' ? resume() : pause());
   $('shoot').addEventListener('pointerdown', e => {

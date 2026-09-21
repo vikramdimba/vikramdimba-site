@@ -153,6 +153,13 @@ test('the cinematic winner pauses the clock for celebration, then offers a repla
   assert.equal(g.el('moment-replay').hidden, false);
 });
 
+test('a finished run offers sharing, and a new run hides it again', () => {
+  const g = game({ reducedMotion: false }); reachWinner(g); g.advance(3.8);
+  assert.equal(g.state.mode, 'won'); assert.equal(g.el('moment-share').hidden, false);
+  assert.equal(g.state.result.won, true); assert.equal(g.state.result.points, 13);
+  g.emit('moment-start', 'click'); assert.equal(g.el('moment-share').hidden, true);
+});
+
 test('replaying the winning shot cannot change scores, attempts, or game time', () => {
   const g = game(); reachWinner(g); g.advance(1.1);
   const before = [g.state.home, g.state.away, g.state.attempts, g.state.remaining, g.state.best];
