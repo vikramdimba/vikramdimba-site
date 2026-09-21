@@ -79,6 +79,17 @@
 .moment.is-focused .moment-footer{flex-shrink:0;padding:14px 0 0;border:0}
 .moment.is-focused .moment-note{display:none}
 .moment.is-focused #moment-exit{display:block}
+/* While playing, the site header stays pinned as a slim bar above the game */
+:root{--site-bar:48px}.built-by{display:none}
+body:has(.moment.is-focused) .site-opening{position:fixed;top:0;left:0;right:0;z-index:101;max-width:none;height:var(--site-bar);display:flex;align-items:center;gap:28px;padding:0 24px;background:#0b0e0a;border-bottom:1px solid #2a3025}
+body:has(.moment.is-focused) .opening-copy{display:none}
+body:has(.moment.is-focused) .identity{flex-shrink:0}
+body:has(.moment.is-focused) .work-links{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+body:has(.moment.is-focused) .work-links::-webkit-scrollbar{display:none}
+body:has(.moment.is-focused) .built-by{display:block;flex-shrink:0;font:400 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:#7f8a72}
+.moment.is-focused{top:var(--site-bar)}
+@media(max-width:860px){body:has(.moment.is-focused) .built-by{display:none}}
+@media(max-width:600px){:root{--site-bar:42px}body:has(.moment.is-focused) .site-opening{gap:16px;padding:0 12px}body:has(.moment.is-focused) .identity a:last-child{display:none}body:has(.moment.is-focused) .work-links>span{display:none}}
 @media(max-width:860px){
  .arena .a-intro{gap:25px;margin-bottom:30px}.arena .a-intro h1.hero{font-size:2rem}.arena .a-intro .hero-sub{font-size:.77rem}
  .moment-controls{grid-template-columns:1fr 150px 170px;gap:15px;padding:15px}.moment-possession>p{font-size:.68rem}.moment-shoot{font-size:.58rem;padding:10px}
