@@ -192,7 +192,8 @@
     root.classList.remove('is-replay');
     if (state.mode === 'paused') { resume(); return; }
     Object.assign(state, { mode: 'playing', phase: 'ready', step: 0, home: 68, away: 76,
-      remaining: 33, elapsed: 0, charge: null, shot: null, phaseTime: 0,
+      remaining: 33, elapsed: 0, charge: null, shot: null, phaseTime: 0, phaseDuration: 0,
+      next: null, from: null, target: null, result: null, shareFile: null,
       made: new Set(), attempts: 0, perfect: 0, cheer: 0, callUntil: 0,
       player: { x: plays[0].x, y: plays[0].y }, previous: performance.now(), lastBounce: 0,
       lastShot: null, celebrationTime: 0, replayTime: 0, lastTick: 33,
@@ -396,9 +397,10 @@
   function finishShot() {
     const shot = state.shot, play = plays[state.step]; state.shot = null;
     if (!shot.made) {
-      sound('miss'); callout('OFF THE IRON.', .85); announce('Off the rim. Get it back and find the green.');
-      if (state.remaining <= 0) { end(false); return; }
-      transition(.8, () => ready(state.step)); return;
+      sound('miss'); callout('MISS. BACK TO THE START.', .85);
+      announce('Off the rim. Every shot has to fall. Restarting with 33 seconds.');
+      state.inputHeld = false; state.phase = 'restarting'; state.phaseTime = 0;
+      setAction(false); return;
     }
     state.home += play.value; state.made.add(state.step); state.cheer = 1.5 + state.step * .3;
     sound('make'); callout(play.call, 1.7); updateHUD();
@@ -716,10 +718,11 @@
     state.previous = now;
     if (state.mode === 'playing') {
       state.elapsed += dt; state.phaseTime += dt; state.cheer = Math.max(0, state.cheer - dt);
-      if (state.step !== 2) state.remaining = Math.max(0, state.remaining - dt);
-      if (state.remaining <= 0 && state.phase !== 'shot') end(false);
+      if (state.step !== 2 && state.phase !== 'restarting') state.remaining = Math.max(0, state.remaining - dt);
+      if (state.remaining <= 0 && !['shot', 'restarting'].includes(state.phase)) end(false);
       if (state.mode === 'playing') {
         if (state.phase === 'shot' && state.phaseTime >= state.shot.duration) finishShot();
+        else if (state.phase === 'restarting' && state.phaseTime >= .8) startGame();
         else if (state.phase === 'pump' && state.phaseTime >= .38) {
           state.phase = 'ready'; state.phaseTime = 0; state.fakeReady = true; state.fakeUntil = state.elapsed + 1.4;
           setAction(true); announce('He’s in the air. Hold, then release in green!');

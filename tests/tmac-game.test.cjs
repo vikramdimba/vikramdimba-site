@@ -75,10 +75,37 @@ test('four threes, one free throw, and a steal produce Houston 81–80', () => {
   assert.equal(g.el('moment-progress').textContent, '13 / 13 PTS');
 });
 
-test('an early miss does not score or skip its possession', () => {
-  const g = game(); g.start(); g.hold(.25); g.advance(2);
-  assert.equal(g.state.home, 68); assert.equal(g.state.step, 0); assert.equal(g.state.phase, 'ready');
-  assert.equal(g.state.attempts, 1); assert.equal(g.state.made.size, 0);
+for (const step of [0, 1, 2, 3, 4]) {
+  for (const timing of ['early', 'late']) {
+    test(`${timing} misses on shot ${step + 1} automatically restart the entire run`, () => {
+      const g = game(); g.start();
+      for (let prior = 0; prior < step; prior++) {
+        g.waitFor(() => g.state.step === prior && g.state.phase === 'ready');
+        g.shootGreen();
+      }
+      g.waitFor(() => g.state.step === step && ['ready', 'pullup'].includes(g.state.phase));
+      if (step === 1) { g.hold(.08); g.waitFor(() => g.state.fakeReady); }
+      g.hold(timing === 'early' ? .25 : 1.1);
+      g.waitFor(() => g.state.phase === 'restarting');
+      assert.equal(g.el('moment-shoot').disabled, true);
+      assert.equal(g.state.attempts, step + 1);
+      g.key('keydown'); g.advance(.3); g.key('keyup');
+      assert.equal(g.state.attempts, step + 1);
+      g.waitFor(() => g.state.phase === 'ready' && g.state.step === 0);
+      assert.equal(g.state.mode, 'playing'); assert.equal(g.state.home, 68); assert.equal(g.state.away, 76);
+      assert.equal(g.state.remaining, 33); assert.equal(g.state.attempts, 0); assert.equal(g.state.made.size, 0);
+      assert.equal(g.state.charge, null); assert.equal(g.state.inputHeld, false); assert.equal(g.state.lastShot, null);
+      g.shootGreen(); g.advance(1.1); assert.equal(g.state.home, 71);
+    });
+  }
+}
+
+test('a missed buzzer shot still automatically restarts', () => {
+  const g = game(); g.start(); g.state.remaining = .4;
+  g.hold(.25); g.waitFor(() => g.state.phase === 'restarting');
+  assert.equal(g.state.remaining, 0);
+  g.waitFor(() => g.state.phase === 'ready');
+  assert.equal(g.state.mode, 'playing'); assert.equal(g.state.remaining, 33);
 });
 
 test('tap and pointer cancellation do not count as shot attempts', () => {
@@ -97,12 +124,11 @@ test('paused and hidden games freeze time and resume without a clock jump', () =
   assert.equal(g.state.mode, 'paused');
 });
 
-test('the free throw stops the clock, including retries', () => {
+test('the free throw stops the clock while waiting and shooting', () => {
   const g = game(); g.start(); g.shootGreen(); g.settle(); g.shootGreen(); g.settle();
   assert.equal(g.state.step, 2); const time = g.state.remaining;
-  g.advance(20); g.hold(.25); g.advance(3);
-  assert.equal(g.state.remaining, time); assert.equal(g.state.step, 2); assert.equal(g.state.home, 74);
-  g.shootGreen(); g.advance(1.1); assert.equal(g.state.home, 75);
+  g.advance(20); g.shootGreen(); g.advance(1.08);
+  assert.equal(g.state.remaining, time); assert.equal(g.state.home, 75);
 });
 
 test('timeout ends the attempt and restart resets the complete game', () => {
